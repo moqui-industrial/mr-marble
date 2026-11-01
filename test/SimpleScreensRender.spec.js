@@ -1,7 +1,7 @@
 // Port of PopCommerce's PopcAdminScreenTests.groovy, the test of these screens upstream (PopcAdmin mounts SimpleScreens):
 // no-required-parameter screens except the exclusions below, then real demo/flow-data renders. The root is
 // SimpleScreens.xml, so the paths are those under apps/PopcAdmin.
-let screens
+let screens, periodId
 
 spec({
     // the whole MantleUslSuite ran before PopcAdminScreenTests: orders 55400 and 55401, invoices 55100 and 55400,
@@ -12,6 +12,13 @@ spec({
     setupSpec() {
         login("john.doe")
         screens = ec.screen.makeTest().rootScreen("component://mr-marble/screen/SimpleScreens.xml")
+        // the fiscal month of AccountingActivities' first transaction (55100): its id is sequenced, from whichever caller
+        // first needed Retail's periods (a component's demo data may post for ORG_ZIZI_RETAIL when it loads)
+        ec.artifactExecution.disableAuthz()
+        const trans = ec.entity.find("mantle.ledger.transaction.AcctgTrans").condition("acctgTransId", "55100").one()
+        periodId = call("mantle.ledger.LedgerServices.get#OrganizationFiscalTimePeriods", { organizationPartyId: "ORG_ZIZI_RETAIL",
+                filterDate: trans.transactionDate, accountingDate: trans.accountingDate, timePeriodTypeId: "FiscalMonth" }).timePeriodList[0].timePeriodId
+        ec.artifactExecution.enableAuthz()
     },
     cleanupSpec() {
         log.info(`Rendered ${screens.renderCount} screens (${screens.errorCount} errors) in ${(Date.now() - screens.startTime) / 1000}s, output ${Math.round(screens.renderTotalChars / 1000)}k chars`)
@@ -110,21 +117,21 @@ feature("render Simple Screens screen (#screenPath, #containsTextList)", {
         { screenPath: "Accounting/OrgSettings/AcctgPreference?partyId=ORG_ZIZI_RETAIL", containsTextList: ['Ziziwork Industries', 'Clone Accounting Settings'] },
         // Accounting/Reports
         // NOTE: these are designed to handle account masks of ###-###-### or even down to the 5 digit ###-##
-        { screenPath: "Accounting/Reports/BalanceSheet?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=55100&detail=true", containsTextList: ["Finished Good Inventory", "212-00", "saveFilename=BalanceSheet.csv"] },
-        { screenPath: "Accounting/Reports/IncomeStatement?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=55100&detail=true", containsTextList: ["Product Sales", "614-20"] },
-        { screenPath: "Accounting/Reports/CashFlowStatement?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=55100&detail=true", containsTextList: ["Finished Good Inventory", "111-10"] },
-        { screenPath: "Accounting/Reports/RetainedEarningsStatement?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=55100", containsTextList: ["Net Earnings", "ZIRET F"] },
-        { screenPath: "Accounting/Reports/FinancialRatios?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=55100", containsTextList: ["Total Assets", "Accounts Receivable"] },
+        { screenPath: "Accounting/Reports/BalanceSheet?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=PERIOD&detail=true", containsTextList: ["Finished Good Inventory", "212-00", "saveFilename=BalanceSheet.csv"] },
+        { screenPath: "Accounting/Reports/IncomeStatement?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=PERIOD&detail=true", containsTextList: ["Product Sales", "614-20"] },
+        { screenPath: "Accounting/Reports/CashFlowStatement?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=PERIOD&detail=true", containsTextList: ["Finished Good Inventory", "111-10"] },
+        { screenPath: "Accounting/Reports/RetainedEarningsStatement?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=PERIOD", containsTextList: ["Net Earnings", "ZIRET F"] },
+        { screenPath: "Accounting/Reports/FinancialRatios?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodIdList=PERIOD", containsTextList: ["Total Assets", "Accounts Receivable"] },
         { screenPath: "Accounting/Reports/PostedAmountSummary?organizationPartyId=ORG_ZIZI_RETAIL&dateRange_poffset=0&dateRange_period=Year", containsTextList: ["Accounts Payable", "Depreciation - Equipment"] },
-        { screenPath: "Accounting/Reports/PostedBalanceSummary?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodId=55100", containsTextList: ["Customer Service Credits (Discounts and Write-downs)", "Net Income"] },
+        { screenPath: "Accounting/Reports/PostedBalanceSummary?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodId=PERIOD", containsTextList: ["Customer Service Credits (Discounts and Write-downs)", "Net Income"] },
         // a class and its descendants (a Set of enum ids made a find that failed); a lateral sub-select member needs a selected field
         { screenPath: "Accounting/Reports/AccountBalance?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodTypeId=FiscalMonth&classAndDescendants=GEN_ADMIN_EXPENSE", containsTextList: ["Utilities - Heating", "Utilities Expense"] },
-        { screenPath: "Accounting/Reports/InvoiceReconciliation?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodId=55100", containsTextList: ["Aging - GL Difference", "Receivable Aging Unpaid", "Invoices where Unpaid different from GL Amount"] },
+        { screenPath: "Accounting/Reports/InvoiceReconciliation?organizationPartyId=ORG_ZIZI_RETAIL&timePeriodId=PERIOD", containsTextList: ["Aging - GL Difference", "Receivable Aging Unpaid", "Invoices where Unpaid different from GL Amount"] },
         // Vendor
         { screenPath: "Party/EditParty?partyId=ORG_ZIZI_RETAIL", containsTextList: ['Ziziwork Retail', 'Internal', 'payment.biziwork.retail@test.com'] },
     ],
     expect({ screenPath, containsTextList }) {
-        const str = screens.render(screenPath, { lastStandalone: "-2" }, null)
+        const str = screens.render(screenPath.replace("=PERIOD", "=" + periodId), { lastStandalone: "-2" }, null)
         let containsAll = true
         for (const containsText of containsTextList) {
             if (containsText && !str.assertContains(containsText)) {
@@ -178,10 +185,10 @@ feature("fiscal period drop-down options are plain maps, a term picks its period
         rows.length > 1
         rows.every(row => typeof row == "object" && row.timePeriodId && row.periodName)
         const one = screens.render("Accounting/Budget/FindBudget/getOrgFiscalPeriods",
-                { organizationPartyId: "ORG_ZIZI_RETAIL", timePeriodTypeId: "FiscalMonth", term: "55100", lastStandalone: "-2" }, null)
+                { organizationPartyId: "ORG_ZIZI_RETAIL", timePeriodTypeId: "FiscalMonth", term: periodId, lastStandalone: "-2" }, null)
         one.jsonObject.length == 1
-        one.jsonObject[0].timePeriodId == "55100"
-        one.jsonObject[0].periodName.includes("FY2026m10")
+        one.jsonObject[0].timePeriodId == periodId
+        one.jsonObject[0].periodName == rows.find(row => row.timePeriodId == periodId).periodName
     },
 })
 
