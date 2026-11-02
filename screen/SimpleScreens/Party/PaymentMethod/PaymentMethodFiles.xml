@@ -19,9 +19,9 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="paymentMethodFileId"/>
 
     <transition name="findPayment"><default-response url="//${appRoot}/Accounting/Payment/FindPayment"/></transition>
-    <transition name="generateNachaFile"><service-call name="mantle.account.NachaServices.generate#NachaFile"/>
+    <transition name="generateNachaFile"><service-call name="mantle.ext.account.NachaServices.generate#NachaFile"/>
         <default-response url="."/></transition>
-    <transition name="generatePosPayFile"><service-call name="mantle.account.PositivePayServices.generate#PositivePayFile"/>
+    <transition name="generatePosPayFile"><service-call name="mantle.ext.account.PositivePayServices.generate#PositivePayFile"/>
         <default-response url="."/></transition>
     <transition name="sendSystemMessage"><service-call name="mantle.account.PaymentMethodServices.produce#PaymentMethodFileSystemMessage"/>
         <default-response url="."/></transition>

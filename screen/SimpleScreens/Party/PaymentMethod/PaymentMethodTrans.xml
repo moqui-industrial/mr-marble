@@ -36,9 +36,9 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="noReconcile"><service-call name="mantle.account.ReconciliationServices.noReconcile#PaymentMethodTrans"/>
         <default-response url="." parameter-map="Object.assign({}, ec.web.requestParameters, {fitId:null, moquiFormName:null, submitButton:null})"/></transition>
 
-    <transition name="uploadOfxVersion1"><service-call name="mantle.account.OfxServices.upload#OfxVersion1"/>
+    <transition name="uploadOfxVersion1"><service-call name="mantle.ext.account.OfxServices.upload#OfxVersion1"/>
         <default-response url="."/></transition>
-    <transition name="uploadBaiVersion2"><service-call name="mantle.account.BaiServices.upload#BaiVersion2"/>
+    <transition name="uploadBaiVersion2"><service-call name="mantle.ext.account.BaiServices.upload#BaiVersion2"/>
         <default-response url="."/></transition>
 
     <actions>
