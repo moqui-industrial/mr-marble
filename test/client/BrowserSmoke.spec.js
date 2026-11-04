@@ -9,20 +9,27 @@ const password = params.password ?? "moqui"
 // the REST login of the default session: the credentials work before any browser starts
 spec({ setupSpec() { login(user, password) } })
 
-feature("#path shows #text", {
-    where: [
+// the pages of the flow data, each with the text it must show, on one page in turn
+const pages = [
         { path: "/apps/SimpleScreens/Customer/FindCustomer?pseudoId=CustJqp", text: "Joe" },
         { path: "/apps/SimpleScreens/Order/OrderDetail?orderId=55401", text: "Picker Bot 2000" },
         { path: "/apps/SimpleScreens/Accounting/Invoice/EditInvoice?invoiceId=55400", text: "Payment Sent" },
         { path: "/apps/SimpleScreens/Accounting/Payment/EditPayment?paymentId=55400", text: "Delivered" },
         { path: "/apps/my/User/Account", text: "Change Password" },
-    ],
-    expect({ path, text }) {
+]
+
+feature("the flow data pages show their text", {
+    expect() {
         const page = browser.newPage({ user, password })
-        page.goto(path).status == 200
-        const body = page.text()
-        body.includes(text)
-        !/Error rendering section|Exception in render/.test(body)
+        // each page that answered otherwise, lacks its text or shows a render error, named
+        pages.map(({ path, text }) => {
+            const status = page.goto(path).status
+            const body = page.text()
+            if (status != 200) return `${path}: status ${status}`
+            if (!body.includes(text)) return `${path}: no "${text}"`
+            if (/Error rendering section|Exception in render/.test(body)) return `${path}: a render error`
+            return null
+        }).filter((problem) => problem != null).join("; ") == ""
     },
 })
 
