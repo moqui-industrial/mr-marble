@@ -27,8 +27,11 @@ To make sure this component loads before yours, add a dependency in your compone
 
 ```sh
 ./moq component-get mr-marble
-./moq test mr-mantle mr-marble
+./moq test mr-mantle mr-marble     # the regression suite, while working and before a commit
+./moq accept mr-mantle mr-marble   # the acceptance suite (the screen sweeps), when asked
 ```
+
+The suites and their specs are in [test/README.md](test/README.md).
 
 Marble ERP covers both goods and services, since goods businesses also manage projects and tasks, and services
 businesses also manage equipment and supplies. It is designed around business activities in 3 categories by the primary roles in the system: Internal, Supplier, and

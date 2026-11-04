@@ -1,17 +1,19 @@
 # mr-marble tests
 
-Run from the MR Moqui repository root with a current build. Select both `mr-mantle` and `mr-marble`: the screen specs
-depend on eight Mantle flow specs (AccountingActivities, AssetReservationMultipleThreads, OrderProcureToPayBasicFlow,
-OrderToCashBasicFlow, OrderToCashTime, ReturnToResponseBasicFlow, WorkPlanToCashBasicFlow and RestApiTests), which supply
+Run from the MR Moqui repository root with a current build. `test/` is the regression suite, run while working and in
+`./moq test-apps` before a commit; `acceptance/` is the acceptance suite, the screen sweeps, run with `./moq accept`
+on a schedule, before a release, when asked, or after adding or changing one of its specs (the two suites:
+`docs/Build-Test.md` in MR Moqui). Select both `mr-mantle` and `mr-marble`: the screen specs depend on eight Mantle
+flow specs (AccountingActivities, AssetReservationMultipleThreads, OrderProcureToPayBasicFlow, OrderToCashBasicFlow, OrderToCashTime, ReturnToResponseBasicFlow, WorkPlanToCashBasicFlow and RestApiTests), which supply
 the pinned orders 55400/55401, invoices 55100/55400/55900, financial accounts and worker credentials the screens
 assert. Do not remove a dependency without replacing its fixtures.
 
 ```sh
-moqui test mr-mantle mr-marble --keep --junit <dir>                       # the full suite on a fresh fixture
-moqui test mr-mantle mr-marble --spec MyAccountScreens,SimpleScreensRender # screen specs and their flow specs
-moqui test mr-mantle mr-marble --spec MarbleScreens                        # Marble ERP screens
+moqui test mr-mantle mr-marble --keep --junit <dir>                       # the regression suite on a fresh fixture
 ./moq test mr-marble --spec OrderRoleFilters
 ./moq test mr-marble --spec ScreenReport -D mrss_screen_report=<file.md>
+./moq accept mr-mantle mr-marble                                          # the acceptance suite: the sweeps
+moqui test mr-mantle mr-marble --acceptance --spec MarbleScreens          # one sweep and its flow specs
 ```
 
 **Do not use `--db existing` against valuable data**: specs create orders, payments, messages, tasks, time entries and
@@ -20,6 +22,8 @@ runtime, set `MOQUI_RUNTIME` to a directory with `conf/`, a `base-component` lin
 and mr-marble.
 
 ## Server specs
+
+The acceptance suite (`acceptance/`) holds the screen sweeps:
 
 - `MyAccountScreens`: worker renders and real message, event, task and time-entry transitions; single-use
   authentication codes.
@@ -31,11 +35,14 @@ and mr-marble.
   pages. Tests restore the user's active-organization preference.
 - `GitScreens`: the git screens of projects and tasks, My Account's Git Access and the tools repository detail (needs
   the `git` feature).
+
+The regression suite (`test/`):
+
 - `ProjectSummarySource`: `Project/ProjectSummary.xml` shows its percents and budgets as numbers.
 - `ClientAccess`: the **test-only** grant the client specs' server needs (below).
 - `OrderRoleFilters`: evaluates `FindOrder.xml`'s two OrgInternal `econdition ignore` expressions for ten `orderType`
   values against Java's case-insensitive sales/purchase behavior.
-- `ScreenReport`: lists every screen with whether a render, a targeted spec or the browser smoke reaches it, and its
+- `ScreenReport`: lists every screen with whether a sweep, a targeted spec or the browser smoke reaches it, and its
   companion files; ignored unless `mrss_screen_report` names the file. The checklist in `../MIGRATION-STATUS.md` is
   ticked by hand.
 
@@ -49,9 +56,8 @@ CSRF enforcement, every browser interaction or physical printing.
 and stops it:
 
 ```sh
-moqui test-client mr-marble --serve
-moqui test-client mr-marble --serve --spec FindScreens --param screen=Order/FindOrder --headed
-moqui test-client mr-marble --serve --spec BrowserSmoke
+moqui test-client mr-marble --serve                     # the regression suite: BrowserSmoke
+moqui test-client mr-marble --serve --acceptance --spec FindScreens --param screen=Order/FindOrder --headed
 ```
 
 The server is a child `moqui test mr-mantle mr-marble --spec SimpleScreensRender,ClientAccess --db snapshot --serve` on
@@ -60,11 +66,12 @@ a scratch runtime. `ClientAccess.spec.js` grants john.doe's ADMIN group the app,
 server of your own with disposable data, load that grant there (`moqui test mr-marble --spec ClientAccess --db
 existing`) and pass `--server <url>`; `--param user=` and `--param password=` override the local demo credentials.
 
-- `BrowserSmoke`: customer, order, invoice, payment and My Account pages; the organization menu (select Ziziwork
-  Retail, then clear it); PrintOrder 55400 with its SVG barcode and a PDF. It changes the demo user's active
-  organization, so use disposable data.
-- `FindScreens`: a row for every `Find*.xml` with a list, Find Options and no required parameter (or the one
-  `--param screen=` names), checking the page, the list and overflow. It is a layout smoke, not a check of rows.
+- `BrowserSmoke` (the regression suite's one walk): customer, order, invoice, payment and My Account pages; the
+  organization menu (select Ziziwork Retail, then clear it); PrintOrder 55400 with its SVG barcode and a PDF. It changes
+  the demo user's active organization, so use disposable data.
+- `FindScreens` (in `acceptance/client/`): a row for every `Find*.xml` with a list, Find Options and no required
+  parameter (or the one `--param screen=` names), checking the page, the list and overflow. It is a layout smoke, not a
+  check of rows.
 
 Every row fails on page problems (uncaught exceptions, console errors, HTTP 400 and up, render errors), leaving
 `failed-<feature>-<n>.png` and `.txt`. Output goes to `runtime/tmp/test-client/<time>-<pid>/` or `--out <dir>`. With no
