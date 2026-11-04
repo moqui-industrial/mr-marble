@@ -60,8 +60,8 @@ moqui test-client mr-marble --serve                     # the regression suite: 
 moqui test-client mr-marble --serve --acceptance --spec FindScreens --param screen=Order/FindOrder --headed
 ```
 
-The server is a child `moqui test mr-mantle mr-marble --spec SimpleScreensRender,ClientAccess --db snapshot --serve` on
-a scratch runtime. `ClientAccess.spec.js` grants john.doe's ADMIN group the app, and `test/MoquiConf.xml` mounts it at
+The server is a child `moqui test mr-mantle mr-marble --spec <the eight Mantle flows>,ClientAccess --db snapshot
+--serve` on a scratch runtime (the acceptance suite's adds SimpleScreensRender). `ClientAccess.spec.js` grants john.doe's ADMIN group the app, and `test/MoquiConf.xml` mounts it at
 `/apps/SimpleScreens`; both merge into `moqui test` runs only, never into `data/` or the component's conf. Against a
 server of your own with disposable data, load that grant there (`moqui test mr-marble --spec ClientAccess --db
 existing`) and pass `--server <url>`; `--param user=` and `--param password=` override the local demo credentials.
