@@ -37,3 +37,9 @@ Marble ERP covers both goods and services, since goods businesses also manage pr
 businesses also manage equipment and supplies. It is designed around business activities in 3 categories by the primary roles in the system: Internal, Supplier, and
 Customer. These activities fit into high level business processes such as Procure to Pay (Supplier interactions) and
 Order to Cash (Customer interactions), and are combined to support a complete end to end flow.
+
+## License and Contributing
+
+[CC0 1.0 Universal with a Grant of Patent License](LICENSE.md). To contribute code, sign
+[AUTHORS.md](AUTHORS.md) in a commit from the account that submits the pull request; its Contributing
+section has the details.
