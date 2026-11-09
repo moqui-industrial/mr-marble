@@ -11,7 +11,7 @@ ${ec.l10n.localize('AMENDED')} ${ec.l10n.format(finalizedStatusHistoryList[0].ch
 ${ec.l10n.localize('For Order')} ${orderId}
 </#list>
 ${ec.l10n.localize('Invoice Date')} ${ec.l10n.format(invoice.invoiceDate, dateFormat)}
-${ec.l10n.localize('Customer #')} ${toParty.pseudoId}
+${ec.l10n.localize('Customer')} # ${toParty.pseudoId}
 <#if has(invoice?.referenceNumber)>${ec.l10n.localize('Ref #')} ${invoice.referenceNumber}</#if>
 <#if has(invoice?.otherPartyOrderId)>${ec.l10n.localize('Your Order')} ${invoice.otherPartyOrderId}</#if>
 

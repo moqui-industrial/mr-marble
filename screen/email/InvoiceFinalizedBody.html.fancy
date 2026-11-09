@@ -16,7 +16,7 @@
             <#list orderIdSet as orderId><strong>${ec.l10n.localize('For Order')} ${orderId}</strong><br/></#list>
         </#if>
         <strong>${ec.l10n.localize('Invoice Date')}</strong> ${ec.l10n.format(invoice.invoiceDate, dateFormat)}<br/>
-        <strong>${ec.l10n.localize('Customer #')}</strong> ${toParty.pseudoId}<br/>
+        <strong>${ec.l10n.localize('Customer')} #</strong> ${toParty.pseudoId}<br/>
         <#if has(invoice?.referenceNumber)><strong>${ec.l10n.localize('Ref #')}</strong> ${invoice.referenceNumber}<br/></#if>
         <#if has(invoice?.otherPartyOrderId)><strong>${ec.l10n.localize('Your Order')}</strong> ${invoice.otherPartyOrderId}<br/></#if>
         <br/>

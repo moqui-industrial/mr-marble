@@ -190,7 +190,7 @@ along with this software (see the LICENSE.md file). If not, see
         <section name="OrderHeaderSection"><widgets>
             <container-row><row-col lg="6">
                 <container-row><row-col sm="6">
-                    <label text="Order #${orderId}" type="h4"/>
+                    <label text="${ec.l10n.localize('Order')} #${orderId}" type="h4"/>
                 </row-col><row-col sm="6">
                     <label text="Web Order (ecommerce)" condition="orderHeader?.salesChannelEnumId == 'ScWeb'" type="h4" style="text-success"/>
                 </row-col></container-row>
@@ -462,8 +462,12 @@ along with this software (see the LICENSE.md file). If not, see
                             <section-iterate name="CustomerNoteIterate" list="customerNoteList" entry="partyNote"><actions>
                                 <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
                                     <field-map field-name="userId" from="partyNote.userId"/></entity-find-one>
+                                <set field="noteByFirst" from="paua?.firstName || ''"/>
+                                <set field="noteByLast" from="paua?.lastName || ''"/>
+                                <set field="noteByUser" from="paua?.username || partyNote.userId"/>
+                                <set field="noteByWhen" from="ec.l10n.format(partyNote.noteDate, 'yyyy-MM-dd HH:mm')"/>
                             </actions><widgets>
-                                <label text="By ${paua?.firstName||''} ${paua?.lastName||''} (${paua?.username || partyNote.userId}) at ${ec.l10n.format(partyNote.noteDate, 'yyyy-MM-dd HH:mm')}" type="strong"/>
+                                <label text="By ${noteByFirst} ${noteByLast} (${noteByUser}) at ${noteByWhen}" type="strong"/>
                                 <label text="${partyNote.noteText}" type="p"/>
                             </widgets></section-iterate>
                         </box-body></container-box>
@@ -483,8 +487,12 @@ along with this software (see the LICENSE.md file). If not, see
                         <section-iterate name="NoteIterateSection" list="orderNoteList" entry="note"><actions>
                             <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
                                 <field-map field-name="userId" from="note.userId"/></entity-find-one>
+                            <set field="noteByFirst" from="paua?.firstName || ''"/>
+                            <set field="noteByLast" from="paua?.lastName || ''"/>
+                            <set field="noteByUser" from="paua?.username || note.userId"/>
+                            <set field="noteByWhen" from="ec.l10n.format(note.noteDate, 'yyyy-MM-dd HH:mm')"/>
                         </actions><widgets>
-                            <label text="By ${paua?.firstName||''} ${paua?.lastName||''} (${paua?.username || note.userId}) at ${ec.l10n.format(note.noteDate, 'yyyy-MM-dd HH:mm')}" type="strong"/>
+                            <label text="By ${noteByFirst} ${noteByLast} (${noteByUser}) at ${noteByWhen}" type="strong"/>
                             <section name="UpdateNoteSection" condition="note.userId == ec.user.userId"><widgets>
                                 <container-dialog id="UpdateNoteContainer" button-text="Edit Note">
                                     <form-single name="UpdateNoteForm" transition="updateNote" map="note">
@@ -517,6 +525,10 @@ along with this software (see the LICENSE.md file). If not, see
                         <section-iterate name="ContentIterateSection" list="contentList" entry="content"><actions>
                             <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
                                 <field-map field-name="userId" from="content.userId"/></entity-find-one>
+                            <set field="noteByFirst" from="paua?.firstName || ''"/>
+                            <set field="noteByLast" from="paua?.lastName || ''"/>
+                            <set field="noteByUser" from="paua?.username || content.userId"/>
+                            <set field="noteByWhen" from="ec.l10n.format(content.contentDate, 'yyyy-MM-dd HH:mm')"/>
                         </actions><widgets><container>
                             <link url="downloadContent" condition="content.contentLocation"
                                     parameter-map="{orderContentId:content.orderContentId}"
@@ -532,7 +544,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     </form-single>
                                 </container-dialog>
                             </widgets></section>
-                            <container><label text="By ${paua?.firstName||''} ${paua?.lastName||''} (${paua?.username || content.userId}) at ${ec.l10n.format(content.contentDate, 'yyyy-MM-dd HH:mm')}"/></container>
+                            <container><label text="By ${noteByFirst} ${noteByLast} (${noteByUser}) at ${noteByWhen}"/></container>
                             <label text="${content.description || 'No Description'}" type="p"/>
                         </container></widgets></section-iterate>
                     </box-body></container-box>
@@ -710,7 +722,7 @@ along with this software (see the LICENSE.md file). If not, see
                         </widgets></section>
                     </widgets></section>
                     <section-iterate name="ShipmentLinks" list="Array.from(orderPartInfo.partShipmentIdSet || []).reverse()" entry="shipmentId"><widgets>
-                        <link url="shipmentDetail" text="Shipment ${shipmentId}" link-type="anchor-button"/>
+                        <link url="shipmentDetail" text="${ec.l10n.localize('Shipment')} ${shipmentId}" link-type="anchor-button"/>
                     </widgets></section-iterate>
 
                     <section name="EditPartSection" condition="orderPartInfo.partEditable"><widgets>
@@ -1062,7 +1074,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     <container>
                                         <link url="editPayment" text="Edit Payment ${partPaymentInfo.partPayment.paymentId}" link-type="anchor"
                                                 parameter-map="{paymentId:partPaymentInfo.partPayment.paymentId}"/>
-                                        <link url="editPaymentMethod" text="Edit ${partPaymentInfo.paymentMethod?.description || 'Payment Method ' + partPaymentInfo.partPayment.paymentMethodId}"
+                                        <link url="editPaymentMethod" text="${ec.l10n.localize('Edit')} ${partPaymentInfo.paymentMethod?.description || 'Payment Method ' + partPaymentInfo.partPayment.paymentMethodId}"
                                                 parameter-map="{paymentMethodId:partPaymentInfo.partPayment.paymentMethodId}" link-type="anchor"
                                                 condition="partPaymentInfo.partPayment.paymentMethodId != null"/>
                                     </container>
@@ -1472,12 +1484,12 @@ along with this software (see the LICENSE.md file). If not, see
                                 <entity-find-one entity-name="mantle.product.Product" value-field="componentProduct" cache="true">
                                     <field-map field-name="productId" from="resInfo.assetLot.productId"/></entity-find-one>
                             </actions><widgets>
-                                <container><label text="Component: " type="strong"/>
+                                <container><label text="${ec.l10n.localize('Component')}: " type="strong"/>
                                     <link url="editProduct" text="ProductNameTemplate" text-map="componentProduct"
                                             link-type="anchor" parameter-map="{productId:componentProduct.productId}"/>
                                 </container>
                             </widgets></section>
-                            <link url="assetDetail" text="Asset ${resInfo.existingRes.assetId}" parameter-map="{assetId:resInfo.existingRes.assetId}" link-type="anchor"/>
+                            <link url="assetDetail" text="${ec.l10n.localize('Asset')} ${resInfo.existingRes.assetId}" parameter-map="{assetId:resInfo.existingRes.assetId}" link-type="anchor"/>
                             <label text=" - Res: ${ec.l10n.format(resInfo.existingRes.quantity, null)}, Not Avail: ${ec.l10n.format(resInfo.existingRes.quantityNotAvailable, null)}, Not Issued: ${ec.l10n.format(resInfo.existingRes.quantityNotIssued, null)}"
                                     type="span" style="${toDecimal(resInfo.existingRes.quantityNotAvailable ?? 0).isZero() ? '' : 'text-danger'}"/>
                             <container>

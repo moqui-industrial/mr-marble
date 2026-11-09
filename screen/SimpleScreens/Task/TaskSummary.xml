@@ -227,41 +227,41 @@ along with this software (see the LICENSE.md file). If not, see
                     <link url="../EditTimeEntries" text="Clock Out" btn-type="success"/>
                 </fail-widgets></section>
             </box-toolbar><box-body>
-                <container><label text="Project: " type="strong"/></container>
+                <container><label text="${ec.l10n.localize('Project')}: " type="strong"/></container>
                 <link text="${project.workEffortId} - ${project.workEffortName}" url="projectSummary" link-type="anchor" condition="project != null">
                     <parameter name="workEffortId" from="project.workEffortId"/><parameter name="rootWorkEffortId" from="project.workEffortId"/></link>
 
                 <section name="MilestoneSection" condition="milestone"><widgets>
-                    <container><label text="Milestone: " type="strong"/></container>
+                    <container><label text="${ec.l10n.localize('Milestone')}: " type="strong"/></container>
                     <link text="${milestone.workEffortId} - ${milestone.workEffortName}" url="milestoneSummary" link-type="anchor">
                         <parameter name="milestoneWorkEffortId" from="milestone.workEffortId"/></link>
                 </widgets></section>
                 <section name="ParentTaskSection" condition="parentTask"><widgets>
-                    <container><label text="Parent Task: " type="strong"/></container>
+                    <container><label text="${ec.l10n.localize('Parent Task')}: " type="strong"/></container>
                     <link text="${parentTask.workEffortId} - ${parentTask.workEffortName}" url="taskSummary" link-type="anchor">
                         <parameter name="workEffortId" from="parentTask.workEffortId"/></link>
                 </widgets></section>
 
-                <container><label text="Priority: " type="strong"/><label text="${task.priority || ''}"/></container>
+                <container><label text="${ec.l10n.localize('Priority')}: " type="strong"/><label text="${task.priority || ''}"/></container>
                 <container><label text="Purpose: " type="strong"/><label text="${purposeEnum?.description ?? ''}"/></container>
-                <container><label text="Status: " type="strong"/>
+                <container><label text="${ec.l10n.localize('Status')}: " type="strong"/>
                     <editable id="TaskStatus" text="${currentStatus?.description ?? ''}" transition="updateTaskStatus"
                             parameter-name="statusId" widget-type="select">
                         <parameter name="workEffortId" from="task.workEffortId"/>
                         <editable-load transition="getTaskStatuses"/>
                     </editable>
                 </container>
-                <container><label text="Resolution: " type="strong"/>
+                <container><label text="${ec.l10n.localize('Resolution')}: " type="strong"/>
                     <editable id="TaskResolution" text="${resolutionEnum?.description||''}" transition="updateTaskResolution"
                             parameter-name="resolutionEnumId" widget-type="select">
                         <parameter name="workEffortId" from="task.workEffortId"/>
                         <editable-load transition="getTaskResolutions"/>
                     </editable>
                 </container>
-                <container><label text="Due Date: " type="strong"/><label text="${ec.l10n.format(task.estimatedCompletionDate, 'yyyy-MM-dd')}"/></container>
-                <container><label text="Estimated Hours: " type="strong"/><label text="${ec.l10n.format(task.estimatedWorkTime, '0.00')}"/></container>
-                <container><label text="Actual Hours: " type="strong"/><label text="${ec.l10n.format(task.actualWorkTime, '0.00')}"/></container>
-                <container><label text="Remaining Hours: " type="strong"/><label text="${ec.l10n.format(task.remainingWorkTime, '0.00')}"/></container>
+                <container><label text="${ec.l10n.localize('Due Date')}: " type="strong"/><label text="${ec.l10n.format(task.estimatedCompletionDate, 'yyyy-MM-dd')}"/></container>
+                <container><label text="${ec.l10n.localize('Estimated Hours')}: " type="strong"/><label text="${ec.l10n.format(task.estimatedWorkTime, '0.00')}"/></container>
+                <container><label text="${ec.l10n.localize('Actual Hours')}: " type="strong"/><label text="${ec.l10n.format(task.actualWorkTime, '0.00')}"/></container>
+                <container><label text="${ec.l10n.localize('Remaining Hours')}: " type="strong"/><label text="${ec.l10n.format(task.remainingWorkTime, '0.00')}"/></container>
                 <container><label text="Act/Est: " type="strong"/>
                     <label text="${ec.l10n.format(toDecimal(task.actualWorkTime ?? 0).multiply(100).divide(task.estimatedWorkTime), '0.00')}%" condition="toNumber(task.estimatedWorkTime)"/></container>
                 <container><label text="Act+Rem/Est: " type="strong"/>

@@ -200,7 +200,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <field name="source">
                             <conditional-field condition="assetReceipt">
                                 <label text="Receipt #${assetReceiptId}"/>
-                                <link url="shipmentDetail" text="Shipment #${assetReceipt.shipmentId}"
+                                <link url="shipmentDetail" text="${ec.l10n.localize('Shipment')} #${assetReceipt.shipmentId}"
                                         parameter-map="{shipmentId:assetReceipt.shipmentId}" link-type="anchor"
                                         condition="assetReceipt.shipmentId"/>
                                 <link url="orderDetail" text="PO #${assetReceipt.orderId}"
@@ -209,7 +209,7 @@ along with this software (see the LICENSE.md file). If not, see
                             </conditional-field>
                             <conditional-field condition="assetIssuance">
                                 <label text="Issuance #${assetIssuanceId}"/>
-                                <link url="shipmentDetail" text="Shipment #${assetIssuance.shipmentId}"
+                                <link url="shipmentDetail" text="${ec.l10n.localize('Shipment')} #${assetIssuance.shipmentId}"
                                         parameter-map="{shipmentId:assetIssuance.shipmentId}" link-type="anchor"
                                         condition="assetIssuance.shipmentId"/>
                                 <link url="orderDetail" text="SO #${assetIssuance.orderId}"
@@ -219,7 +219,7 @@ along with this software (see the LICENSE.md file). If not, see
                             <conditional-field condition="assetReservationId">
                                 <label text="Reservation #${assetReservationId}"/>
                                 <label text=" (reservation removed)" condition="!assetReservation"/>
-                                <link url="orderDetail" text="Order #${assetReservation?.orderId || orderId}" link-type="anchor"
+                                <link url="orderDetail" text="${ec.l10n.localize('Order')} #${assetReservation?.orderId || orderId}" link-type="anchor"
                                         parameter-map="{orderId:(assetReservation?.orderId || orderId)}" condition="assetReservation?.orderId || orderId"/>
                             </conditional-field>
                             <conditional-field condition="otherAssetId">

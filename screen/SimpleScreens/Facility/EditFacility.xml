@@ -188,8 +188,12 @@ along with this software (see the LICENSE.md file). If not, see
                     <section-iterate name="NoteIterateSection" list="facilityNoteList" entry="facilityNote"><actions>
                         <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
                             <field-map field-name="userId" from="facilityNote.userId"/></entity-find-one>
+                        <set field="noteByFirst" from="paua?.firstName || ''"/>
+                        <set field="noteByLast" from="paua?.lastName || ''"/>
+                        <set field="noteByUser" from="paua?.username || facilityNote.userId"/>
+                        <set field="noteByWhen" from="ec.l10n.format(facilityNote.noteDate, 'yyyy-MM-dd HH:mm')"/>
                     </actions><widgets>
-                        <label text="By ${paua?.firstName||''} ${paua?.lastName||''} (${paua?.username || facilityNote.userId}) at ${ec.l10n.format(facilityNote.noteDate, 'yyyy-MM-dd HH:mm')}" type="strong"/>
+                        <label text="By ${noteByFirst} ${noteByLast} (${noteByUser}) at ${noteByWhen}" type="strong"/>
                         <section name="UpdateNoteSection" condition="facilityNote.userId == ec.user.userId"><widgets>
                             <container-dialog id="UpdateNoteContainer" button-text="Edit Note">
                                 <form-single name="UpdateNoteForm" transition="updateFacilityNote" map="facilityNote">

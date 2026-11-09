@@ -47,7 +47,7 @@ along with this software (see the LICENSE.md file). If not, see
     </actions>
     <widgets>
         <section name="OneVersion" condition="versionText != null"><widgets>
-            <container-box><box-header title="Version ${versionNameLhs.substring(0, 12)}"/><box-body>
+            <container-box><box-header title="${ec.l10n.localize('Version')} ${versionNameLhs.substring(0, 12)}"/><box-body>
                 <label text="${versionText}" type="pre" style="pre-plain"/>
             </box-body></container-box>
         </widgets><fail-widgets>

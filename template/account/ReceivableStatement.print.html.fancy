@@ -97,7 +97,7 @@ along with this software (see the LICENSE.md file). If not, see
             <#if has(invoiceList)>
             <table style="width:100%">
                 <thead style="font-size:9pt;font-weight:bold;border-bottom:solid black"><tr>
-                    <td style="width:1.0in;padding:${cellPadding}"><div style="text-align:left">${ec.l10n.localize('Invoice #')}</div></td>
+                    <td style="width:1.0in;padding:${cellPadding}"><div style="text-align:left">${ec.l10n.localize('Invoice')} #</div></td>
                     <td style="width:1.5in;padding:${cellPadding}"><div style="text-align:left">${ec.l10n.localize('Ref/PO')}</div></td>
                     <td style="width:1.0in;padding:${cellPadding}"><div style="text-align:left">${ec.l10n.localize('Invoice Date')}</div></td>
                     <td style="width:1.0in;padding:${cellPadding}"><div style="text-align:left">${ec.l10n.localize('Due Date')}</div></td>

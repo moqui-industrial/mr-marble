@@ -83,9 +83,9 @@ along with this software (see the LICENSE.md file). If not, see
             <div style="width:7.5in;height:0.8in">
                 <table style="margin-bottom:0.2in;width:7.5in"><tbody><tr>
                     <td style="padding:3pt;width:1.75in">
-                        <div style="font-weight:bold">${ec.l10n.localize('Invoice #')}</div>
+                        <div style="font-weight:bold">${ec.l10n.localize('Invoice')} #</div>
                         <div>${invoiceId}</div>
-                        <div style="font-weight:bold">${ec.l10n.localize('Customer #')}</div>
+                        <div style="font-weight:bold">${ec.l10n.localize('Customer')} #</div>
                         <div>${toParty.pseudoId}</div>
                     </td>
                     <#if has(invoice?.referenceNumber) || has(invoice?.otherPartyOrderId)>

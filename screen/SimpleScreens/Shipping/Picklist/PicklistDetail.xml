@@ -133,7 +133,7 @@ along with this software (see the LICENSE.md file). If not, see
                 </form-single>
             </row-col>
             <row-col lg="6">
-                <container-box><box-header title="Status: ${workEffort.status?.description || statusId}"/><box-toolbar>
+                <container-box><box-header title="${ec.l10n.localize('Status')}: ${workEffort.status?.description || statusId}"/><box-toolbar>
                     <link url="updateShipmentLoad" text="Approve" parameter-map="{statusId:'WeApproved'}"
                             condition="shipmentCount &amp;&amp; statusId == 'WeInPlanning'" btn-type="success"/>
                     <link url="updateShipmentLoad" text="Begin (In Progress)" parameter-map="{statusId:'WeInProgress'}"

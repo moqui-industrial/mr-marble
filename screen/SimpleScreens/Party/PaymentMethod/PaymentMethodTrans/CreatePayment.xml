@@ -30,11 +30,12 @@ along with this software (see the LICENSE.md file). If not, see
         <entity-find-one entity-name="mantle.account.method.PaymentMethodTrans" value-field="paymentMethodTrans"/>
 
         <set field="instrumentByTransType" from="{PMTT_CHECK:'PiCompanyCheck', PMTT_PAYMENT:'PiAch', PMTT_OTHER:'PiOther'}"/>
+        <set field="refNumber" from="paymentMethodTrans?.refNumber"/>
     </actions>
     <widgets>
-        <label text="Name: ${paymentMethodTrans.transName}" type="p" condition="paymentMethodTrans.transName"/>
-        <label text="Memo: ${paymentMethodTrans.transMemo}" type="p" condition="paymentMethodTrans.transMemo"/>
-        <label text="Ref: ${paymentMethodTrans.refNumber}" type="p" condition="paymentMethodTrans.refNumber"/>
+        <label text="${ec.l10n.localize('Name')}: ${paymentMethodTrans.transName}" type="p" condition="paymentMethodTrans.transName"/>
+        <label text="${ec.l10n.localize('Memo')}: ${paymentMethodTrans.transMemo}" type="p" condition="paymentMethodTrans.transMemo"/>
+        <label text="Ref: ${refNumber}" type="p" condition="paymentMethodTrans.refNumber"/>
 
         <form-single name="CreatePaymentForm" transition="createPayment">
             <field name="partyId"><default-field><hidden/></default-field></field>

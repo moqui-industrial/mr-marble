@@ -224,8 +224,8 @@ along with this software (see the LICENSE.md file). If not, see
                         condition="!(paymentId || acctgTransId || noReconcile == 'Y')"/>
                 <container-dialog id="ManRecDialog" button-text="Manual Rec" title="Manual Reconcile"
                         condition="(!paymentId || !acctgTransId) &amp;&amp; noReconcile != 'Y'">
-                    <label text="Name: ${transName}" type="p" condition="transName"/>
-                    <label text="Memo: ${transMemo}" type="p" condition="transMemo"/>
+                    <label text="${ec.l10n.localize('Name')}: ${transName}" type="p" condition="transName"/>
+                    <label text="${ec.l10n.localize('Memo')}: ${transMemo}" type="p" condition="transMemo"/>
                     <label text="Ref: ${refNumber}" type="p" condition="refNumber"/>
                     <label text="If Payment and GL Trans are associated you can enter one or the other" type="p" style="text-info"/>
 

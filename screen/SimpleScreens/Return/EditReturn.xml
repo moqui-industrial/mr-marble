@@ -42,7 +42,7 @@ along with this software (see the LICENSE.md file). If not, see
     <widgets>
         <container-row><row-col lg="6">
             <section-iterate name="SalesOrderLinks" list="salesOrderIdSet" entry="orderId"><widgets>
-                <link url="orderDetail" text="Order #${orderId}" link-type="anchor-button"/>
+                <link url="orderDetail" text="${ec.l10n.localize('Order')} #${orderId}" link-type="anchor-button"/>
             </widgets></section-iterate>
             <section-iterate name="ReplacementOrderLinks" list="replacementOrderIdSet" entry="orderId"><widgets>
                 <link url="orderDetail" text="Replacement Order #${orderId}" link-type="anchor-button"/>

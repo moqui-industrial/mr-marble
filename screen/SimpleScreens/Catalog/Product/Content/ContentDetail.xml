@@ -97,7 +97,7 @@ along with this software (see the LICENSE.md file). If not, see
                             <field-map field-name="userId" from="version.userId"/></entity-find-one>
                         <if condition="version_has_next"><set field="nextVersion" from="versionList[version_index+1]"/></if>
                     </actions><widgets>
-                        <dynamic-dialog id="ShowVersionDialog" button-text="Version ${version.versionName}" width="900"
+                        <dynamic-dialog id="ShowVersionDialog" button-text="${ec.l10n.localize('Version')} ${version.versionName}" width="900"
                                 transition="../ContentCompare" parameter-map="{versionNameLhs:version.versionName}"/>
                         <section name="DiffPrevSection" condition="nextVersion &amp;&amp; nextVersion.versionName"><widgets>
                             <dynamic-dialog id="DiffPrevDialog" button-text="Diff Prev" width="900"
@@ -109,7 +109,7 @@ along with this software (see the LICENSE.md file). If not, see
                         </widgets></section>
 
                         <label text="By ${paua.firstName||''} ${paua.lastName||''} (${paua.username||'N/A'})" type="div" condition="paua"/>
-                        <label text="At ${ec.l10n.format(version.versionDate, 'yyyy-MM-dd HH:mm')}" type="div"/>
+                        <label text="${ec.l10n.localize('At')} ${ec.l10n.format(version.versionDate, 'yyyy-MM-dd HH:mm')}" type="div"/>
                     </widgets></section-iterate>
                 </widgets><fail-widgets>
                     <label text="History not supported for this type of resource" type="strong"/>

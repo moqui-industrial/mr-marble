@@ -209,15 +209,19 @@ along with this software (see the LICENSE.md file). If not, see
             <label text="Location " type="strong" condition="facilityLocation"/>
             <label text="${ec.resource.expand('FacilityLocationNameTemplate', null, facilityLocation)}" type="span" condition="facilityLocation"/>
             <!-- show total quantities, should be one but iterate just in case -->
-            <section-iterate name="LocAssetSummary" list="locAssetList" entry="locAsset"><widgets>
-                <label text="${ec.resource.expand('ProductNameTemplate', null, locAsset)} - Qty ${ec.l10n.format(locAsset.quantityOnHandTotal, null)}" type="div"/>
+            <section-iterate name="LocAssetSummary" list="locAssetList" entry="locAsset"><actions>
+                <set field="qtyAsset" from="locAsset"/>
+            </actions><widgets>
+                <label text="${ec.resource.expand('ProductNameTemplate', null, qtyAsset)} - Qty ${ec.l10n.format(qtyAsset.quantityOnHandTotal, null)}" type="div"/>
             </widgets></section-iterate>
         </row-col><row-col sm="4">
             <label text="Container " type="strong" condition="container"/>
             <label text="${ec.resource.expand('ContainerNameTemplate', null, container)}" type="span" condition="container"/>
             <!-- show total quantities, should be one but iterate just in case -->
-            <section-iterate name="ContAssetSummary" list="contAssetList" entry="contAsset"><widgets>
-                <label text="${ec.resource.expand('ProductNameTemplate', null, contAsset)} - Qty ${ec.l10n.format(contAsset.quantityOnHandTotal, null)}" type="div"/>
+            <section-iterate name="ContAssetSummary" list="contAssetList" entry="contAsset"><actions>
+                <set field="qtyAsset" from="contAsset"/>
+            </actions><widgets>
+                <label text="${ec.resource.expand('ProductNameTemplate', null, qtyAsset)} - Qty ${ec.l10n.format(qtyAsset.quantityOnHandTotal, null)}" type="div"/>
             </widgets></section-iterate>
         </row-col><row-col sm="4">
             <label text="Product " type="strong" condition="product"/>

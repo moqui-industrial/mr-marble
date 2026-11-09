@@ -24,7 +24,7 @@ along with this software (see the LICENSE.md file). If not, see
                 location="component://mr-marble/screen/SimpleScreens/Accounting/Reports/SalesSummary.xml"/>
     </subscreens>
     <widgets>
-        <label text="Order ${orderId}" type="strong" condition="orderId"/>
+        <label text="${ec.l10n.localize('Order')} ${orderId}" type="strong" condition="orderId"/>
         <subscreens-panel id="OrderPanel" type="tab"/>
     </widgets>
 </screen>

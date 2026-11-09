@@ -253,8 +253,12 @@ along with this software (see the LICENSE.md file). If not, see
                     <section-iterate name="NoteIterateSection" list="requestNoteList" entry="note"><actions>
                         <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
                             <field-map field-name="userId" from="note.userId"/></entity-find-one>
+                        <set field="noteByFirst" from="paua?.firstName || ''"/>
+                        <set field="noteByLast" from="paua?.lastName || ''"/>
+                        <set field="noteByUser" from="paua?.username || note.userId"/>
+                        <set field="noteByWhen" from="ec.l10n.format(note.noteDate, 'yyyy-MM-dd HH:mm')"/>
                     </actions><widgets>
-                        <label text="By ${paua?.firstName||''} ${paua?.lastName||''} (${paua?.username || note.userId}) at ${ec.l10n.format(note.noteDate, 'yyyy-MM-dd HH:mm')}" type="strong"/>
+                        <label text="By ${noteByFirst} ${noteByLast} (${noteByUser}) at ${noteByWhen}" type="strong"/>
                         <section name="UpdateNoteSection" condition="note.userId == ec.user.userId || ec.user.isInGroup('ADMIN') || ec.user.isInGroup('HIVE_MIND_ADMIN')"><widgets>
                             <container-dialog id="UpdateNoteContainer" button-text="Edit Note">
                                 <form-single name="UpdateNoteForm" transition="updateNote" map="note">

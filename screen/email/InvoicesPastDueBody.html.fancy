@@ -9,7 +9,7 @@
 
 <p><strong>${ec.l10n.localize('Past Due Invoices')}</strong></p>
 <table border="0" cellpadding="8px" cellspacing="3" width="100%">
-    <tr><td>${ec.l10n.localize('Your Order')}</td><td>${ec.l10n.localize('Ref #')}</td><td>${ec.l10n.localize('Invoice #')}</td><td>${ec.l10n.localize('Date')}</td><td>${ec.l10n.localize('Due')}</td><td>${ec.l10n.localize('Total')}</td><td>${ec.l10n.localize('Unpaid')}</td></tr>
+    <tr><td>${ec.l10n.localize('Your Order')}</td><td>${ec.l10n.localize('Ref #')}</td><td>${ec.l10n.localize('Invoice')} #</td><td>${ec.l10n.localize('Date')}</td><td>${ec.l10n.localize('Due')}</td><td>${ec.l10n.localize('Total')}</td><td>${ec.l10n.localize('Unpaid')}</td></tr>
     <#list invoiceList as invoice>
         <tr>
             <td>${invoice.otherPartyOrderId ?? ""}</td>
@@ -26,7 +26,7 @@
 <#if (paymentList?.length> 0)>
 <p><strong>${ec.l10n.localize('Payments not yet Applied')}</strong></p>
 <table border="0" cellpadding="8px" cellspacing="3" width="100%">
-    <tr><td>${ec.l10n.localize('Payment Ref #')}</td><td>${ec.l10n.localize('Payment #')}</td><td>${ec.l10n.localize('Date')}</td><td>${ec.l10n.localize('Total')}</td><td>${ec.l10n.localize('Unapplied')}</td></tr>
+    <tr><td>${ec.l10n.localize('Payment Ref #')}</td><td>${ec.l10n.localize('Payment')} #</td><td>${ec.l10n.localize('Date')}</td><td>${ec.l10n.localize('Total')}</td><td>${ec.l10n.localize('Unapplied')}</td></tr>
     <#list paymentList as payment>
         <tr>
             <td>${payment.paymentRefNum ?? ""}</td>
@@ -59,4 +59,4 @@
 
 <p><strong>${ec.l10n.localize('Total Past Due')}</strong> ${ec.l10n.format(toDecimal(unpaidInvoiceTotal ?? 0).subtract(unappliedPaymentTotal ?? 0).subtract(creditInvoiceTotal ?? 0), "#,##0.00")}</p>
 
-<p><strong>${ec.l10n.localize('Customer #')}</strong> ${toParty.pseudoId}</p>
+<p><strong>${ec.l10n.localize('Customer')} #</strong> ${toParty.pseudoId}</p>

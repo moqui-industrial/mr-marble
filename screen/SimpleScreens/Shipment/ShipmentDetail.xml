@@ -380,7 +380,7 @@ along with this software (see the LICENSE.md file). If not, see
                 </widgets></section>
 
                 <section-iterate name="OrderLinks" list="orderIdSet" entry="orderId"><widgets>
-                    <link url="orderDetail" text="Order ${orderId}" link-type="anchor-button"/></widgets></section-iterate>
+                    <link url="orderDetail" text="${ec.l10n.localize('Order')} ${orderId}" link-type="anchor-button"/></widgets></section-iterate>
                 <section-iterate name="ReturnLinks" list="returnIdSet" entry="returnId"><widgets>
                     <link url="editReturn" text="Return ${returnId}" link-type="anchor-button"/></widgets></section-iterate>
                 <section-iterate name="InvoiceLinks" list="invoiceIdSet" entry="invoiceId"><widgets>
@@ -728,8 +728,12 @@ along with this software (see the LICENSE.md file). If not, see
                         <section-iterate name="CustomerNoteIterate" list="customerNoteList" entry="partyNote"><actions>
                             <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
                                 <field-map field-name="userId" from="partyNote.userId"/></entity-find-one>
+                            <set field="noteByFirst" from="paua?.firstName || ''"/>
+                            <set field="noteByLast" from="paua?.lastName || ''"/>
+                            <set field="noteByUser" from="paua?.username || partyNote.userId"/>
+                            <set field="noteByWhen" from="ec.l10n.format(partyNote.noteDate, 'yyyy-MM-dd HH:mm')"/>
                         </actions><widgets>
-                            <label text="By ${paua?.firstName||''} ${paua?.lastName||''} (${paua?.username || partyNote.userId}) at ${ec.l10n.format(partyNote.noteDate, 'yyyy-MM-dd HH:mm')}" type="strong"/>
+                            <label text="By ${noteByFirst} ${noteByLast} (${noteByUser}) at ${noteByWhen}" type="strong"/>
                             <label text="${partyNote.noteText}" type="p"/>
                         </widgets></section-iterate>
                     </box-body></container-box>
@@ -741,8 +745,12 @@ along with this software (see the LICENSE.md file). If not, see
                     <section-iterate name="NoteIterateSection" list="orderNoteList" entry="note"><actions>
                         <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
                             <field-map field-name="userId" from="note.userId"/></entity-find-one>
+                        <set field="noteByFirst" from="paua?.firstName || ''"/>
+                        <set field="noteByLast" from="paua?.lastName || ''"/>
+                        <set field="noteByUser" from="paua?.username || note.userId"/>
+                        <set field="noteByWhen" from="ec.l10n.format(note.noteDate, 'yyyy-MM-dd HH:mm')"/>
                     </actions><widgets>
-                        <label text="By ${paua?.firstName||''} ${paua?.lastName||''} (${paua?.username || note.userId}) at ${ec.l10n.format(note.noteDate, 'yyyy-MM-dd HH:mm')}" type="strong"/>
+                        <label text="By ${noteByFirst} ${noteByLast} (${noteByUser}) at ${noteByWhen}" type="strong"/>
                         <label text="${note.noteText}" type="p"/>
                     </widgets></section-iterate>
                 </box-body></container-box>
@@ -832,6 +840,10 @@ along with this software (see the LICENSE.md file). If not, see
                 <section-iterate name="ContentIterateSection" list="contentList" entry="content"><actions>
                     <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
                         <field-map field-name="userId" from="content.userId"/></entity-find-one>
+                    <set field="noteByFirst" from="paua?.firstName || ''"/>
+                    <set field="noteByLast" from="paua?.lastName || ''"/>
+                    <set field="noteByUser" from="paua?.username || content.userId"/>
+                    <set field="noteByWhen" from="ec.l10n.format(content.contentDate, 'yyyy-MM-dd HH:mm')"/>
                 </actions><widgets>
                     <container>
                         <link url="downloadContent" condition="content.contentLocation"
@@ -846,7 +858,7 @@ along with this software (see the LICENSE.md file). If not, see
                                 <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                             </form-single>
                         </container-dialog>
-                        <container><label text="By ${paua?.firstName||''} ${paua?.lastName||''} (${paua?.username || content.userId}) at ${ec.l10n.format(content.contentDate, 'yyyy-MM-dd HH:mm')}"/></container>
+                        <container><label text="By ${noteByFirst} ${noteByLast} (${noteByUser}) at ${noteByWhen}"/></container>
                         <label text="${content.description || 'No Description'}" type="p"/>
                     </container>
                 </widgets></section-iterate>

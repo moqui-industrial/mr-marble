@@ -126,7 +126,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <table style="width:7in">
                             <thead style="font-size:9pt;font-weight:bold;border-bottom:solid black"><tr>
                                 <td style="width:1.6in;padding:${cellPadding}"><div style="text-align:left">${ec.l10n.localize('Account #')}</div></td>
-                                <td style="width:1.6in;padding:${cellPadding}"><div style="text-align:left">${ec.l10n.localize('TX #')}</div></td>
+                                <td style="width:1.6in;padding:${cellPadding}"><div style="text-align:left">${ec.l10n.localize('TX')} #</div></td>
                                 <td style="width:1.6in;padding:${cellPadding}"><div style="text-align:left">${ec.l10n.localize('TX Date')}</div></td>
                                 <td style="width:2in;padding:${cellPadding}"><div style="text-align:right">${ec.l10n.localize('TX Amount')}</div></td>
                             </tr></thead>

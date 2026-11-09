@@ -441,7 +441,7 @@ along with this software (see the LICENSE.md file). If not, see
                     </actions><widgets><container>
                         <section name="PageVersionSection" condition="wph.versionName"><widgets>
                             <container>
-                                <link url="." text="Version ${wph.versionName.substring(0, 12)}" link-type="anchor"><parameter name="versionName" from="wph.versionName"/></link>
+                                <link url="." text="${ec.l10n.localize('Version')} ${wph.versionName.substring(0, 12)}" link-type="anchor"><parameter name="versionName" from="wph.versionName"/></link>
                                 <label text=" published" condition="wph.versionName == publishedVersionName" style="text-success"/>
                             </container>
                             <container>
@@ -452,7 +452,7 @@ along with this software (see the LICENSE.md file). If not, see
                             </container>
                         </widgets></section>
                         <label text="By ${paua.firstName||''} ${paua.lastName||''} (${paua.username||'N/A'})" type="div" condition="paua"/>
-                        <label text="At ${ec.l10n.format(wph.changeDateTime, 'yyyy-MM-dd HH:mm')}" type="div"/>
+                        <label text="${ec.l10n.localize('At')} ${ec.l10n.format(wph.changeDateTime, 'yyyy-MM-dd HH:mm')}" type="div"/>
                     </container></widgets></section-iterate>
                 </box-body></container-box>
             </widgets></section>

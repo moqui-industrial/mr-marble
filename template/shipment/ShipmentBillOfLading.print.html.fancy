@@ -77,7 +77,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <table style="margin-bottom:0.1in;width:7.5in">
                     <tbody><tr>
                         <td style="padding:3pt;width:2in">
-                            <div style="font-weight:bold">Order Part #</div>
+                            <div style="font-weight:bold">${ec.l10n.localize('Order Part')} #</div>
                             <div>${orderPart.orderPartSeqId}</div>
                             <div style="font-weight:bold">Part Total</div>
                             <div>${ec.l10n.formatCurrency(orderPart.partTotal, orderHeader.currencyUomId)}</div>

@@ -63,7 +63,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="customerPartyId" from="customerRp?.partyId"/></link>
 
         <section-iterate name="OrderSection" list="requestItemOrderList" entry="item"><widgets>
-            <link url="//${appRoot}/Order/OrderDetail" text="Order ${item.orderId}">
+            <link url="//${appRoot}/Order/OrderDetail" text="${ec.l10n.localize('Order')} ${item.orderId}">
                 <parameter name="orderId" from="item.orderId"/></link>
         </widgets></section-iterate>
 

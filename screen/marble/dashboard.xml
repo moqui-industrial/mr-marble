@@ -218,7 +218,7 @@ along with this software (see the LICENSE.md file). If not, see
             </container>
             <container style="diagram-sequence-item">
                 <container>
-                    <label text="Content: "/>
+                    <label text="${ec.l10n.localize('Content')}: "/>
                     <link text="Wiki" url="../Wiki/WikiSpaces" link-type="anchor"/>
                     <label text=" - "/>
                     <link text="Blogs" url="../Wiki/WikiBlogs" link-type="anchor"/>

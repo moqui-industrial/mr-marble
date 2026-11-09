@@ -323,7 +323,7 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="assetReservations">
                 <conditional-field condition="isShippable &amp;&amp; isVendorInternalOrg">
                     <section-iterate name="ReservationInfoSection" list="resInfoList" entry="resInfo"><widgets><container>
-                        <link url="assetDetail" text="Asset ${resInfo.existingRes.assetId}" parameter-map="{assetId:resInfo.existingRes.assetId}" link-type="anchor"/>
+                        <link url="assetDetail" text="${ec.l10n.localize('Asset')} ${resInfo.existingRes.assetId}" parameter-map="{assetId:resInfo.existingRes.assetId}" link-type="anchor"/>
                         <label text=" - Res: ${ec.l10n.format(resInfo.existingRes.quantity, null)}, Not Avail: ${ec.l10n.format(resInfo.existingRes.quantityNotAvailable, null)}, Not Issued: ${ec.l10n.format(resInfo.existingRes.quantityNotIssued, null)}"
                                 type="span" style="${toDecimal(resInfo.existingRes.quantityNotAvailable ?? 0).isZero() ? '' : 'text-danger'}"/>
                         <container>

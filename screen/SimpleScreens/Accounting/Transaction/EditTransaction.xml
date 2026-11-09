@@ -65,6 +65,18 @@ along with this software (see the LICENSE.md file). If not, see
 
         <set field="glAccountCodeMask" from="ec.user.getPreference('GlAccountCodeMask')"/>
         <set field="accountCodeFormatter" from="StringUtilities.masker(glAccountCodeMask, '0')"/><!-- will be null if no mask -->
+        <script><![CDATA[
+            // One warning template. ##glBasis keeps the English noun and lets Spanish use the article.
+            glBasisWarnings = []
+            const glBasis = (label, id) => { if (id) glBasisWarnings.push(ec.l10n.localize(label) + ' ' + id) }
+            glBasis('Asset Issuance##glBasis', acctgTrans.assetIssuanceId)
+            glBasis('Asset Receipt##glBasis', acctgTrans.assetReceiptId)
+            glBasis('Physical Inventory##glBasis', acctgTrans.physicalInventoryId)
+            glBasis('Invoice##glBasis', acctgTrans.invoiceId)
+            glBasis('Payment##glBasis', acctgTrans.paymentId)
+            glBasis('Payment Application##glBasis', acctgTrans.paymentApplicationId)
+            glBasis('Financial Account Transaction##glBasis', acctgTrans.finAccountTransId)
+        ]]></script>
     </actions>
     <widgets>
         <section name="NotPostedSection"><condition><expression>acctgTrans.isPosted != "Y"</expression></condition><widgets>
@@ -138,22 +150,10 @@ along with this software (see the LICENSE.md file). If not, see
                 </form-single>
             </container-dialog>
 
-            <label text="WARNING: This GL Transaction is based on Asset Issuance ${acctgTrans.assetIssuanceId}, manual changes to Transaction Date, Amounts, etc may cause reconciliation exceptions or audit flags."
-                    type="p" style="text-danger" condition="acctgTrans.assetIssuanceId"/>
-            <label text="WARNING: This GL Transaction is based on Asset Receipt ${acctgTrans.assetReceiptId}, manual changes to Transaction Date, Amounts, etc may cause reconciliation exceptions or audit flags."
-                    type="p" style="text-danger" condition="acctgTrans.assetReceiptId"/>
-            <label text="WARNING: This GL Transaction is based on Physical Inventory ${acctgTrans.physicalInventoryId}, manual changes to Transaction Date, Amounts, etc may cause reconciliation exceptions or audit flags."
-                    type="p" style="text-danger" condition="acctgTrans.physicalInventoryId"/>
-
-            <label text="WARNING: This GL Transaction is based on Invoice ${acctgTrans.invoiceId}, manual changes to Transaction Date, Amounts, etc may cause reconciliation exceptions or audit flags."
-                    type="p" style="text-danger" condition="acctgTrans.invoiceId"/>
-            <label text="WARNING: This GL Transaction is based on Payment ${acctgTrans.paymentId}, manual changes to Transaction Date, Amounts, etc may cause reconciliation exceptions or audit flags."
-                    type="p" style="text-danger" condition="acctgTrans.paymentId"/>
-            <label text="WARNING: This GL Transaction is based on Payment Application ${acctgTrans.paymentApplicationId}, manual changes to Transaction Date, Amounts, etc may cause reconciliation exceptions or audit flags."
-                    type="p" style="text-danger" condition="acctgTrans.paymentApplicationId"/>
-
-            <label text="WARNING: This GL Transaction is based on Financial Account Transaction ${acctgTrans.finAccountTransId}, manual changes to Transaction Date, Amounts, etc may cause reconciliation exceptions or audit flags."
-                    type="p" style="text-danger" condition="acctgTrans.finAccountTransId"/>
+            <section-iterate name="GlBasisWarnings" list="glBasisWarnings" entry="basis"><widgets>
+                <label text="WARNING: This GL Transaction is based on ${basis}, manual changes to Transaction Date, Amounts, etc may cause reconciliation exceptions or audit flags."
+                        type="p" style="text-danger"/>
+            </widgets></section-iterate>
 
         </widgets><fail-widgets>
             <link url="unpostAcctgTrans" text="Un-post Transaction" confirmation="Un-post transaction?"/>
