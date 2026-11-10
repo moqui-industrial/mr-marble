@@ -35,8 +35,10 @@ feature("render Simple Screens with no required parameters", {
         for (const screenPath of screens.getNoRequiredParameterPaths(screensToSkip)) {
             const str = screens.render(screenPath, { lastStandalone: "-2" }, null)
             log.info(`Rendered ${screenPath} in ${str.renderTime}ms, ${str.output?.length} characters`)
-            if (str.errorMessages.length || str.status != 200 || !str.output?.length)
-                failed.push(`${screenPath}: HTTP ${str.status}, ${str.errorMessages.join('; ')}`)
+            // boundary comments (MoquiDevConf) make an empty render non-empty; strip them so an empty page fails on every conf
+            const content = (str.output || '').replace(/<!-- (?:BEGIN|END) [\s\S]*?-->/g, '').trim()
+            if (str.errorMessages.length || str.status != 200 || !content.length)
+                failed.push(`${screenPath}: HTTP ${str.status}${content.length ? '' : ', empty'}, ${str.errorMessages.join('; ')}`)
         }
         if (failed.length) log.warn(`Screens with errors (${failed.length}):\n${failed.join('\n')}`)
 
