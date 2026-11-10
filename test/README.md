@@ -77,6 +77,21 @@ Every row fails on page problems (uncaught exceptions, console errors, HTTP 400 
 `failed-<feature>-<n>.png` and `.txt`. Output goes to `runtime/tmp/test-client/<time>-<pid>/` or `--out <dir>`. With no
 Chromium found the browser features skip; `--fail-on-skip` makes that a failure for CI.
 
+## Load script
+
+`test/load/OrderToCash.load.js` walks a sales order through the Marble ERP screens (create, place, approve, print, ship,
+pick, pack, pay), the same walk on MR Moqui and on a Java MarbleERP so the results compare (plans/LoadRunner.md in MR
+Moqui, section 11). Run it against a server on `conf/MoquiLoadTestConf.xml` with the demo data:
+
+```sh
+./moq run -c conf/MoquiLoadTestConf.xml -p 8090                         # in another terminal
+./moq test-load mr-marble --script OrderToCash -p 8090 [--param pdf=false] [--users 10 --iterations 5]
+moqui test-load --compare <java>/result.json <mr>/result.json
+```
+
+The acceptance spec `acceptance/client/OrderToCash.spec.js` runs it with two users once each and checks the orders,
+shipments and invoices it made.
+
 ## Lint
 
 ```sh
