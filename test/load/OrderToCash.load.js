@@ -38,6 +38,10 @@ const quantity = wholeNumber("quantity", params.quantity)
 const withPdf = flag(params.pdf)
 const withLogout = flag(params.logout)
 
+// The links OrderDetail and ShipmentDetail have to the shipment and the invoice of the walk.
+const SHIPMENT_LINK = linkPattern("[Ss]hipmentDetail", "shipmentId")
+const INVOICE_LINK = linkPattern("[Ee]ditInvoice", "invoiceId")
+
 // The prices the JMeter script used: each product item at 18.99, and one shipping charge of 30.
 const UNIT_AMOUNT = "18.99"
 const SHIPPING_AMOUNT = "30"
@@ -87,7 +91,7 @@ scenario("sales", {
             // OrderDetail's ShipmentLinks section: <link url="shipmentDetail" text="Shipment ${shipmentId}"/>, an
             // anchor to .../Shipment/ShipmentDetail?shipmentId=<id>.
             const shipped = transition(orderDetail + "/shipOrderPart", { orderId, orderPartSeqId: "01" }, "ship order")
-            const shipmentId = linkedId(shipped.text, "[Ss]hipmentDetail", "shipmentId")
+            const shipmentId = linkedId(shipped.text, SHIPMENT_LINK)
             if (!shipmentId) fail(`ship order: no ShipmentDetail?shipmentId= link on the OrderDetail of order ${orderId}`)
 
             const shipmentDetail = app + "/Shipment/ShipmentDetail"
@@ -100,7 +104,7 @@ scenario("sales", {
             // Packing an outgoing shipment makes its sales invoice (the ShipmentOutgoingPackedCreateInvoices SECA), linked
             // from ShipmentDetail's InvoiceLinks section: <link url="editInvoice" text="Invoice ${invoiceId}"/>.
             const packed = transition(shipmentDetail + "/packShipment", { shipmentId }, "pack shipment")
-            const invoiceId = linkedId(packed.text, "[Ee]ditInvoice", "invoiceId")
+            const invoiceId = linkedId(packed.text, INVOICE_LINK)
             if (!invoiceId) fail(`pack shipment: no EditInvoice?invoiceId= link on ShipmentDetail of shipment ${shipmentId} (order ${orderId})`)
 
             const editInvoice = app + "/Accounting/Invoice/EditInvoice"
@@ -161,7 +165,8 @@ function checkPage(res, name) {
     if (error) fail(`${name}: ${error}`)
 }
 
-function atLogin(url) { return /\/Login(?:[/?#]|$)/.test(url || "") }
+const AT_LOGIN = /\/Login(?:[/?#]|$)/
+function atLogin(url) { return AT_LOGIN.test(url || "") }
 
 // The text of the first error message on the page, or null.
 function pageError(text) {
@@ -171,10 +176,14 @@ function pageError(text) {
         .replace(/\s+/g, " ").trim() || "an error message with no text"
 }
 
-// The value of a parameter in the first link to a screen, from an href that is absolute or relative and has the parameter
-// first or after others (with & or &amp;): .../Shipment/ShipmentDetail?shipmentId=100050.
-function linkedId(text, screenPattern, parameter) {
-    const pattern = new RegExp(`/${screenPattern}\\?(?:[^"'\\s<>#]*?(?:&amp;|&))?${parameter}=([^&"'\\s<>#]+)`)
+// The pattern of a parameter in a link to a screen, from an href that is absolute or relative and has the parameter
+// first or after others (with & or &amp;): .../Shipment/ShipmentDetail?shipmentId=100050. Made once, at the top level.
+function linkPattern(screenPattern, parameter) {
+    return new RegExp(`/${screenPattern}\\?(?:[^"'\\s<>#]*?(?:&amp;|&))?${parameter}=([^&"'\\s<>#]+)`)
+}
+
+// The value of the parameter of a linkPattern in the first link it matches, or null.
+function linkedId(text, pattern) {
     const match = pattern.exec(text || "")
     return match ? decodeURIComponent(match[1]) : null
 }
