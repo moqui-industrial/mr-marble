@@ -15,7 +15,7 @@ along with this software (see the LICENSE.md file). If not, see
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
         default-menu-title="Wiki Blog Posts" default-menu-include="false">
 
-    <transition name="createBlog"><service-call name="org.moqui.impl.WikiServices.create#WikiBlog"/>
+    <transition name="createBlog"><service-call name="org.moqui.resource.WikiServices.create#WikiBlog"/>
         <default-response url="../EditWikiBlog"/></transition>
 
     <transition-include name="getSpacePages" location="component://mr-marble/screen/SimpleScreens/Wiki/wiki.xml"/>

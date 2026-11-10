@@ -27,23 +27,23 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="editTask"><default-response url="//${appRoot}/Task/TaskSummary"/></transition>
     <transition name="editRequest"><default-response url="//${appRoot}/Request/EditRequest"/></transition>
 
-    <transition name="setPublishedVersion"><service-call name="org.moqui.impl.WikiServices.set#PublishedVersion"/>
+    <transition name="setPublishedVersion"><service-call name="org.moqui.resource.WikiServices.set#PublishedVersion"/>
         <default-response url="."/></transition>
-    <transition name="cloneWikiPage"><service-call name="org.moqui.impl.WikiServices.clone#WikiPage"/>
+    <transition name="cloneWikiPage"><service-call name="org.moqui.resource.WikiServices.clone#WikiPage"/>
         <default-response url="."/></transition>
     <transition name="deletePage">
-        <service-call name="org.moqui.impl.WikiServices.delete#WikiPage"/>
+        <service-call name="org.moqui.resource.WikiServices.delete#WikiPage"/>
         <!-- delete#WikiPage will return parent (or empty) page path, make sure wikiPageId is null -->
         <actions><set field="wikiPageId" from="null"/></actions>
         <default-response url="."/>
     </transition>
 
-    <transition name="uploadAttachment"><service-call name="org.moqui.impl.WikiServices.upload#WikiPageAttachment"/>
+    <transition name="uploadAttachment"><service-call name="org.moqui.resource.WikiServices.upload#WikiPageAttachment"/>
         <default-response url="."/></transition>
-    <transition name="deleteAttachment"><service-call name="org.moqui.impl.WikiServices.delete#WikiPageAttachment"/>
+    <transition name="deleteAttachment"><service-call name="org.moqui.resource.WikiServices.delete#WikiPageAttachment"/>
         <default-response url="."/></transition>
     <transition name="downloadAttachment" read-only="true"><actions>
-        <service-call name="org.moqui.impl.WikiServices.get#WikiPageAttachment" in-map="context" out-map="context"/>
+        <service-call name="org.moqui.resource.WikiServices.get#WikiPageAttachment" in-map="context" out-map="context"/>
         <script>ec.web.sendResourceResponse(attachmentReference.location)</script>
     </actions><default-response type="none"/></transition>
 
@@ -103,7 +103,7 @@ along with this software (see the LICENSE.md file). If not, see
 
         <set field="extraPathNameList" from="sri.getScreenUrlInfo().extraPathNameList"/>
         <!-- <log level="warn" message="wiki pre-actions extraPathNameList ${extraPathNameList}"/> -->
-        <service-call name="org.moqui.impl.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
+        <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
 
         <!-- redirect to EditWikiPage to create instead of trying to render a page that doesn't exist -->
         <script><![CDATA[
@@ -128,7 +128,7 @@ along with this software (see the LICENSE.md file). If not, see
         <set field="baseLinkPath" from="basePath + '/' + wikiSpaceId"/>
         <set field="baseLinkUrl" from="sri.getCurrentScreenUrl().getScreenPathUrl() + '/' + wikiSpaceId"/>
         <!-- this is only used for the WikiPageTree.ftl file, not needed otherwise: -->
-        <!-- <service-call name="org.moqui.impl.WikiServices.get#WikiSpacePages" in-map="context" out-map="context"/> -->
+        <!-- <service-call name="org.moqui.resource.WikiServices.get#WikiSpacePages" in-map="context" out-map="context"/> -->
 
         <!-- the tree's own loads (the actions transition) run these actions with no page: no children then -->
         <set field="childPageList" from="pageReference ? pageReference.getChildren() : []"/>
@@ -182,13 +182,13 @@ along with this software (see the LICENSE.md file). If not, see
                         <link text="${curFileName}" url="${basePath}/${wikiSpaceId}/${encodedPath}" url-noparam="true" id="${newIdPath}"/>
 
                         <tree-sub-node node-name="WikiPageNode" list="childPageList"><actions>
-                            <service-call name="org.moqui.impl.WikiServices.get#WikiPageChildren" out-map="curPageInfo"
+                            <service-call name="org.moqui.resource.WikiServices.get#WikiPageChildren" out-map="curPageInfo"
                                     in-map="{wikiSpaceId:wikiSpaceId, pagePath:treeNodeId}"/>
                             <set field="childPageList" from="curPageInfo.childPageInfoList"/>
                         </actions></tree-sub-node>
                     </tree-node>
                     <tree-sub-node node-name="WikiPageNode" list="topPageList"><actions>
-                        <service-call name="org.moqui.impl.WikiServices.get#WikiPageChildren" out-map="rootPageInfo"
+                        <service-call name="org.moqui.resource.WikiServices.get#WikiPageChildren" out-map="rootPageInfo"
                                 in-map="{wikiSpaceId:wikiSpaceId}"/>
                         <set field="topPageList" from="rootPageInfo.childPageInfoList"/>
                         <!-- <log level="warn" message="============ wikiSpaceId=${wikiSpaceId}; topPageList=${topPageList}"/> -->

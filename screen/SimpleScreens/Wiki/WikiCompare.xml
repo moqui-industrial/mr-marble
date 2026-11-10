@@ -22,7 +22,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <actions>
         <!-- <set field="extraPathNameList" from="sri.screenUrlInfo.extraPathNameList"/> -->
-        <service-call name="org.moqui.impl.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
+        <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
         <set field="wikiType" from="wikiType || 'md'"/>
         <!-- the line diff is made on the server (ResourceReference.getVersionDiff): an HTML table with every text escaped;
             the Java screen diffed characters in the browser with jsdiff from a CDN -->

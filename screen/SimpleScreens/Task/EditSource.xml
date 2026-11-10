@@ -33,7 +33,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="getRepositoryRefs">
         <actions>
-            <service-call name="org.moqui.impl.GitServices.get#GitRefs" in-map="{repositoryId:repositoryId}" out-map="refsOut"/>
+            <service-call name="org.moqui.git.GitServices.get#GitRefs" in-map="{repositoryId:repositoryId}" out-map="refsOut"/>
             <script>ec.web.sendJsonResponse((refsOut.refList ?? []).map(ref => ({refName:ref.refName,
                 label:(ref.refType == 'tag' ? 'tag ' : '') + ref.shortName})))</script>
         </actions>

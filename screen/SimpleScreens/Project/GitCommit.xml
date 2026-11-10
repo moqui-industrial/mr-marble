@@ -13,7 +13,7 @@ along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <!-- One commit of a git repository: its message, people and parents, the work efforts it is linked to, and the files it
-    changed with their line diffs (org.moqui.impl.GitServices get#GitCommit and get#GitCommitDiff, which check
+    changed with their line diffs (org.moqui.git.GitServices get#GitCommit and get#GitCommitDiff, which check
     AT_GIT_REPOSITORY view; a project's members may view its repositories). Past 25 changed files each diff is opened
     on its own. New screen, no SimpleScreens original. -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -29,14 +29,14 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="projectSummary"><default-response url="../ProjectSummary"/></transition>
 
     <actions>
-        <service-call name="org.moqui.impl.GitServices.get#GitCommit" in-map="{repositoryId:repositoryId, commitId:commitId}"
+        <service-call name="org.moqui.git.GitServices.get#GitCommit" in-map="{repositoryId:repositoryId, commitId:commitId}"
                 out-map="found"/>
         <set field="commit" from="found.commit"/>
         <if condition="commit == null"><return error="true" message="No commit ${commitId} in repository ${repositoryId}"/></if>
         <set field="fileList" from="found.fileList ?? []"/>
         <set field="allDiffs" from="fileList.length &lt;= 25"/>
         <if condition="allDiffs || diffPath">
-            <service-call name="org.moqui.impl.GitServices.get#GitCommitDiff" out-map="diffOut"
+            <service-call name="org.moqui.git.GitServices.get#GitCommitDiff" out-map="diffOut"
                     in-map="{repositoryId:repositoryId, commitId:commit.commitId, path:allDiffs ? null : diffPath}"/>
             <set field="fileDiffList" from="diffOut.fileDiffList ?? []"/>
             <else><set field="fileDiffList" from="[]"/></else>

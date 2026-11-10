@@ -152,9 +152,9 @@ feature("render Simple Screens screen (#screenPath, #containsTextList)", {
 feature("wiki page versions render: #screenPath", {
     given() {
         if (!ec.entity.find("moqui.resource.wiki.WikiSpace").condition("wikiSpaceId", "SSWT").one()) {
-            call("org.moqui.impl.WikiServices.create#WikiSpace", { wikiSpaceId: "SSWT", description: "Screen test space" })
+            call("org.moqui.resource.WikiServices.create#WikiSpace", { wikiSpaceId: "SSWT", description: "Screen test space" })
             for (const pageText of ["first text of the page\n", "second text of the page\n"])
-                call("org.moqui.impl.WikiServices.update#WikiPage", { wikiSpaceId: "SSWT", pageName: "Page1", pageText })
+                call("org.moqui.resource.WikiServices.update#WikiPage", { wikiSpaceId: "SSWT", pageName: "Page1", pageText })
         }
     },
     where: [

@@ -23,7 +23,7 @@ along with this software (see the LICENSE.md file). If not, see
     <actions>
         <set field="extraPathNameList" from="sri.getScreenUrlInfo().extraPathNameList"/>
         <!-- <log level="warn" message="wiki pre-actions extraPathNameList ${extraPathNameList}"/> -->
-        <service-call name="org.moqui.impl.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
+        <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
 
         <set field="basePath" from="sri.getCurrentScreenUrl().getScreenOnlyPath()"/>
         <set field="baseLinkPath" from="basePath + '/' + wikiSpaceId"/>
@@ -38,7 +38,7 @@ along with this software (see the LICENSE.md file). If not, see
             } catch (err) { ec.logger.warn(`Could not read the text of wiki page ${pageLocation}: ${err.message}`) }
         ]]></script>
         <!-- this is only used for the WikiPageTree.ftl file, not needed otherwise: -->
-        <!-- <service-call name="org.moqui.impl.WikiServices.get#WikiSpacePages" in-map="context" out-map="context"/> -->
+        <!-- <service-call name="org.moqui.resource.WikiServices.get#WikiSpacePages" in-map="context" out-map="context"/> -->
     </actions>
 
     <widgets>

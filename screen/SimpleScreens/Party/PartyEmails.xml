@@ -17,7 +17,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <parameter name="partyId" required="true"/>
 
-    <transition name="sendEmailMessage"><service-call name="org.moqui.impl.EmailServices.send#EmailMessage"/>
+    <transition name="sendEmailMessage"><service-call name="org.moqui.mail.EmailServices.send#EmailMessage"/>
         <default-response url="."/></transition>
 
     <transition name="EmailMessage" read-only="true"><parameter name="emailMessageId"/><actions>

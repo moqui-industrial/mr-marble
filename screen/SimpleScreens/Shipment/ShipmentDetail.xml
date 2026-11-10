@@ -60,7 +60,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="sendShipmentStoreEmail"><service-call name="mantle.shipment.ShipmentServices.send#ShipmentStoreEmail"/>
         <default-response url="."/></transition>
-    <transition name="sendEmailMessage"><service-call name="org.moqui.impl.EmailServices.send#EmailMessage"/>
+    <transition name="sendEmailMessage"><service-call name="org.moqui.mail.EmailServices.send#EmailMessage"/>
         <default-response url="."/></transition>
 
     <transition name="createShipmentParty"><service-call name="create#mantle.shipment.ShipmentParty"/>

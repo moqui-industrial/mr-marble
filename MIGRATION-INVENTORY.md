@@ -12728,7 +12728,7 @@ Idiom totals (sites, files)
 - service-call@in-map [map-literal] expression `[userId:ec.user.userId]` is not JavaScript
 
 ```xml
-<service-call name="org.moqui.impl.WikiServices.get#UserWikiSpaces" in-map="[userId:ec.user.userId]" out-map="context"/>
+<service-call name="org.moqui.resource.WikiServices.get#UserWikiSpaces" in-map="[userId:ec.user.userId]" out-map="context"/>
 ```
 
 #### Line 75
@@ -13821,7 +13821,7 @@ Idiom totals (sites, files)
 - service-call@in-map [map-literal] expression `[userId:ec.user.userId]` is not JavaScript
 
 ```xml
-<service-call name="org.moqui.impl.WikiServices.get#UserWikiSpaces" in-map="[userId:ec.user.userId]" out-map="context"/>
+<service-call name="org.moqui.resource.WikiServices.get#UserWikiSpaces" in-map="[userId:ec.user.userId]" out-map="context"/>
 ```
 
 #### Line 70
@@ -18630,7 +18630,7 @@ Idiom totals (sites, files)
 - service-call@in-map [map-literal] expression `[userId:ec.user.userId]` is not JavaScript
 
 ```xml
-<service-call name="org.moqui.impl.WikiServices.get#UserWikiSpaces" in-map="[userId:ec.user.userId]" out-map="context"/>
+<service-call name="org.moqui.resource.WikiServices.get#UserWikiSpaces" in-map="[userId:ec.user.userId]" out-map="context"/>
 ```
 
 #### Line 70
@@ -19486,7 +19486,7 @@ Idiom totals (sites, files)
 - service-call@in-map [map-literal] expression `[wikiSpaceId:wikiSpaceId, pagePath:treeNodeId]` is not JavaScript
 
 ```xml
-<service-call name="org.moqui.impl.WikiServices.get#WikiPageChildren" out-map="curPageInfo"
+<service-call name="org.moqui.resource.WikiServices.get#WikiPageChildren" out-map="curPageInfo"
                                     in-map="[wikiSpaceId:wikiSpaceId, pagePath:treeNodeId]"/>
 ```
 
@@ -19496,7 +19496,7 @@ Idiom totals (sites, files)
 - service-call@in-map [map-literal] expression `[wikiSpaceId:wikiSpaceId]` is not JavaScript
 
 ```xml
-<service-call name="org.moqui.impl.WikiServices.get#WikiPageChildren" out-map="rootPageInfo"
+<service-call name="org.moqui.resource.WikiServices.get#WikiPageChildren" out-map="rootPageInfo"
                                 in-map="[wikiSpaceId:wikiSpaceId]"/>
 ```
 

@@ -45,7 +45,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <field-map field-name="repositoryId" from="link.repositoryId"/></entity-find-one>
             <!-- a user who may not see the repository gets no clone URLs; the row still shows -->
             <set field="urls" from="null"/>
-            <script>try { urls = ec.service.sync().name('org.moqui.impl.GitServices.get#GitCloneUrls').parameters({repositoryId:link.repositoryId}).call() }
+            <script>try { urls = ec.service.sync().name('org.moqui.git.GitServices.get#GitCloneUrls').parameters({repositoryId:link.repositoryId}).call() }
                 finally { ec.message.clearErrors() }</script>
             <script>repositoryList.push({repositoryId:link.repositoryId, description:repository?.description,
                 repositoryKind:repository?.repositoryKind || 'local', branch:repository?.branch || 'main',

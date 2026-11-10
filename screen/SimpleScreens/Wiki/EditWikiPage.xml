@@ -19,7 +19,7 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="wikiSpaceId"/>
     <!-- all other parameters should only be passed explicitly: pagePath, parentPath, pageName, wikiType -->
 
-    <transition name="updatePage"><service-call name="org.moqui.impl.WikiServices.update#WikiPage"/>
+    <transition name="updatePage"><service-call name="org.moqui.resource.WikiServices.update#WikiPage"/>
         <default-response url="../wiki/${wikiSpaceId}/${encodedPagePath}" parameter-map="{wikiSpaceId:null,pagePath:null,wikiPageId:null}"/>
         <error-response url="." parameter-map="{pagePath:pagePath, parentPath:parentPath, pageName:pageName, wikiType:wikiType, isCreate:isCreate}"/>
     </transition>
@@ -29,11 +29,11 @@ along with this software (see the LICENSE.md file). If not, see
     <actions>
         <set field="extraPathNameList" from="sri.getScreenUrlInfo().extraPathNameList"/>
         <if condition="!isCreate || isCreate == 'false'">
-            <service-call name="org.moqui.impl.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
             <set field="pageText" from="pageReference?.exists ? ec.resource.getLocationText(pageLocation, false) : ''"/>
         </if>
         <set field="currentPagePath" from="pagePath"/>
-        <!-- <service-call name="org.moqui.impl.WikiServices.get#WikiSpacePages" in-map="context" out-map="context"/> -->
+        <!-- <service-call name="org.moqui.resource.WikiServices.get#WikiSpacePages" in-map="context" out-map="context"/> -->
         <set field="isRootPage" from="pageReference?.exists &amp;&amp; !pagePath"/>
         <set field="wikiType" from="wikiType || 'md'"/>
     </actions>

@@ -24,7 +24,7 @@ function settle(repositoryId) {
         const busy = ["recording", "pending", "running"].reduce((sum, ecaStatus) =>
             sum + ec.entity.find("moqui.resource.GitUpdate").condition({ repositoryId, ecaStatus }).count(), 0)
         if (busy == 0) return
-        call("org.moqui.impl.GitServices.process#PendingGitUpdates", {})
+        call("org.moqui.git.GitServices.process#PendingGitUpdates", {})
     }
     throw new Error("the git updates did not settle")
 }
@@ -45,7 +45,7 @@ feature("a project with a repository, a task and a commit that names it", {
         taskId = call("mantle.work.TaskServices.create#Task", { rootWorkEffortId: PROJECT, workEffortName: "Show commits" })
             .workEffortId
         call("mantle.work.GitServices.create#ProjectRepository", { workEffortId: PROJECT, repositoryKind: "db" })
-        commitId = call("org.moqui.impl.GitServices.commit#GitFiles", { repositoryId: "gits",
+        commitId = call("org.moqui.git.GitServices.commit#GitFiles", { repositoryId: "gits",
             message: `Show the commits of ${taskId}`, fileMap: { "README.md": "# Git screens\nline two\n" } }).commitId
         settle("gits")
         return { links: ec.entity.find("mantle.work.effort.WorkEffortGitCommit").condition({ workEffortId: taskId }).count() }
