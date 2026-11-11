@@ -61,7 +61,7 @@ along with this software (see the LICENSE.md file). If not, see
         </form-single>
 
         <container-row><row-col md="4">
-            <section-include name="FieldTreeSection" location="component://tools/screen/System/DataDocument/Edit/DataDocFields.xml"/>
+            <section-include name="FieldTreeSection" location="component://tools/screen/Tools/Data/Documents/Edit/DataDocFields.xml"/>
         </row-col><row-col md="8">
             <dynamic-container id="FieldListContainer" transition="FieldList"/>
         </row-col></container-row>
