@@ -39,7 +39,7 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="updateProductOtherIdentification"><service-call name="update#mantle.product.ProductOtherIdentification"/>
         <default-response url="."/></transition>
     <transition name="deleteProductOtherIdentification">
-        <parameter name="productIdTypeEnumId"/>
+        <parameter name="productOtherIdentId"/><parameter name="productIdTypeEnumId"/>
         <service-call name="delete#mantle.product.ProductOtherIdentification"/><default-response url="."/></transition>
     <transition name="generateUrlSlugOtherIdent">
         <service-call name="mantle.product.StoreServices.generate#UrlSlugFromProductName"/>
@@ -288,6 +288,7 @@ along with this software (see the LICENSE.md file). If not, see
                 </container-dialog>
             </box-toolbar><box-body>
                 <form-list name="OtherIdentificationsForm" list="productOtherIdentificationList" transition="updateProductOtherIdentification">
+                    <field name="productOtherIdentId"><default-field><hidden/></default-field></field>
                     <field name="productId"><default-field><hidden/></default-field></field>
                     <field name="productIdTypeEnumId"><default-field title="ID Type">
                         <drop-down><list-options list="productIdentificationTypeList" key="${enumId}" text="${description}"/></drop-down></default-field>
