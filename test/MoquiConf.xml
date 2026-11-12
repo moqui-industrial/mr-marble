@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Merged after this component's MoquiConf.xml in moqui test runs only (the in-process specs and the server of
-    moqui test --serve, which test/client/suite.js declares): the app mount at /apps/SimpleScreens that MoquiConf.xml
+    moqui test when it serves the client specs, which test/client/suite.js declares): the app mount at /apps/SimpleScreens that MoquiConf.xml
     leaves commented out, which the client specs' screens are under. SimpleScreens normally relies on the application
     that mounts it. -->
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-3.xsd">
