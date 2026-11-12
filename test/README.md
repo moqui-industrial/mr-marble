@@ -81,7 +81,7 @@ Chromium found the browser features skip; `--fail-on-skip` makes that a failure 
 
 `test/load/OrderToCash.load.js` walks a sales order through the Marble ERP screens (create, place, approve, print, ship,
 pick, pack, pay), the same walk on MR Moqui and on a Java MarbleERP so the results compare (`docs/tools/Load-Runner.md` in MR
-Moqui; the walk is section 11 of its `plans/LoadRunner.md`). Run it against a server on `conf/MoquiLoadTestConf.xml` with the demo data:
+Moqui; the walk is section 11 of its `plans/archive/LoadRunner.md`). Run it against a server on `conf/MoquiLoadTestConf.xml` with the demo data:
 
 ```sh
 ./moq run -c conf/MoquiLoadTestConf.xml -p 8090                         # in another terminal

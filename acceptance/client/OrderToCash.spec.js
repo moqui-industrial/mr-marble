@@ -1,4 +1,4 @@
-// The order to cash load script (test/load/OrderToCash.load.js, plans/LoadRunner.md section 14) still walks its flow:
+// The order to cash load script (test/load/OrderToCash.load.js, plans/archive/LoadRunner.md section 14) still walks its flow:
 // two users, one iteration each, against the suite's server (suite.js: the default conf, whose demo tarpits two users'
 // one iteration stays far under). No errors, each step's name has two samples, and the two orders it made, with their
 // shipments and invoices, are in their final statuses, read over Mantle's REST API. A complete scenario well over the

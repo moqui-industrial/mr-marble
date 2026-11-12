@@ -1,7 +1,7 @@
 // Order to cash through the Marble ERP screens, as PopCommerce's jmeter/PopcOrderToCash.jmx did against PopcAdmin: log
 // in, create a sales order, add items, place and approve it, print it, ship it, pick and pack the shipment, then pay the
 // invoice that packing made. The same script runs against a Java Moqui with MarbleERP and against MR Moqui with
-// mr-marble (plans/LoadRunner.md section 11), so the sample names line up in Compare.
+// mr-marble (plans/archive/LoadRunner.md section 11), so the sample names line up in Compare.
 //
 // Run it against a server on its load test conf (conf/MoquiLoadTestConf.xml, tarpits off) with the demo data: the
 // demo ALL_SCREENS tarpit answers 429 after 120 hits of a screen in 60 seconds.
