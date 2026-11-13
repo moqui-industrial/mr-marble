@@ -20,6 +20,16 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="createInvoice"><service-call name="mantle.account.InvoiceServices.create#Invoice"/>
         <default-response url="../EditInvoice"/></transition>
+    <transition name="downloadFatturaPaXml" read-only="true">
+        <actions>
+            <service-call name="mantle.account.ElectronicInvoiceServices.generate#FatturaPaXml"
+                    in-map="{invoiceId:invoiceId}" out-map="xmlResult"/>
+            <script>
+                ec.web.sendTextResponse(xmlResult.xmlText, "application/xml", xmlResult.filename);
+            </script>
+        </actions>
+        <default-response type="none"/>
+    </transition>
     <transition name="createProjectInvoiceItems"><service-call name="mantle.account.InvoiceServices.create#ProjectInvoiceItems"/>
         <default-response url="."/></transition>
     <transition name="createWorkerInvoiceItems"><service-call name="mantle.account.InvoiceServices.create#WorkerInvoiceItems"/>
@@ -326,6 +336,13 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="unpaidTotal" align="right" show-total="true"><header-field title="Unpaid" show-order-by="true"><range-find/></header-field>
                 <default-field><display currency-unit-field="currencyUomId"/></default-field></field>
 
+            <field name="sdiXml">
+                <header-field title="SdI XML"/>
+                <default-field title="">
+                    <link url="downloadFatturaPaXml" text="XML" link-type="anchor"
+                            parameter-map="{invoiceId:invoiceId}"/>
+                </default-field>
+            </field>
             <field name="findButton"><header-field title="Find"><submit/></header-field></field>
 
             <form-list-column><field-ref name="invoiceId"/><field-ref name="invoiceTypeEnumId"/></form-list-column>
@@ -336,6 +353,7 @@ along with this software (see the LICENSE.md file). If not, see
             <form-list-column><field-ref name="toPartyId"/></form-list-column>
             <form-list-column><field-ref name="invoiceTotal"/></form-list-column>
             <form-list-column><field-ref name="unpaidTotal"/></form-list-column>
+            <form-list-column><field-ref name="sdiXml"/><field-ref name="findButton"/></form-list-column>
         </form-list>
 
         <section name="AgingSummarySection" condition="hasReceivableAging.value || hasPayableAging.value"><actions>
