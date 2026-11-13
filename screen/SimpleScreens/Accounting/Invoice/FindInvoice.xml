@@ -339,7 +339,7 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="sdiXml">
                 <header-field title="SdI XML"/>
                 <default-field title="">
-                    <link url="downloadFatturaPaXml" text="XML" link-type="anchor"
+                    <link url="downloadFatturaPaXml" text="XML" link-type="anchor" target-window="_blank"
                             parameter-map="{invoiceId:invoiceId}"/>
                 </default-field>
             </field>
