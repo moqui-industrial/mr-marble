@@ -53,7 +53,7 @@ One row per screen XML under `screen/` (371), sorted by path below `screen/`, ca
 
 **Migrated** means both: the source is converted (Groovy to JavaScript, Java classes and collections to the supported APIs, FreeMarker/XSL-FO to supported templates, jQuery/CDN libraries to native controls), and the screen has been exercised through the TUI. The TUI pass is the first-pass check because an agent can drive it from a terminal and iterate quickly. **Validated** is a later phase: the screen checked in a browser (rendering, dialogs, AJAX and transitions, print output, authorization as the mounting app configures it). Do not tick Validated during the TUI pass.
 
-Nothing is ticked yet. The earlier JS specs and Chromium smoke runs show some screens render, but they predate this definition and did not go through the TUI, so they do not count. `acceptance/ScreenReport.spec.js` writes a report of which screens those specs already reach (`./moq test -D mrss_screen_report=/tmp/mrss-report.md -- mr-mantle mr-marble --acceptance --spec ScreenReport`); use it to choose where to start, not as a source of ticks.
+Nothing is ticked yet. The earlier JS specs and Chromium smoke runs show some screens render, but they predate this definition and did not go through the TUI, so they do not count. `test/acceptance/ScreenReport.spec.js` writes a report of which screens those specs already reach (`./moq test -D mrss_screen_report=/tmp/mrss-report.md -- mr-mantle mr-marble --acceptance --spec ScreenReport`); use it to choose where to start, not as a source of ticks.
 
 ### Process
 
