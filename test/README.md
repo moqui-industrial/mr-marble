@@ -18,7 +18,7 @@ moqui test mr-mantle mr-marble --acceptance --spec MarbleScreens          # one 
 
 **Do not use `--db existing` against valuable data**: specs create orders, payments, messages, tasks, time entries and
 authentication factors, and re-running fixture specs in a used database collides on IDs. To test outside the default
-runtime, set `MOQUI_RUNTIME` to a directory with `conf/`, a `base-component` link and `component/` links to mr-mantle
+runtime, set `MOQUI_RUNTIME` to a directory with `conf/`, a `components/base` link and `component/` links to mr-mantle
 and mr-marble.
 
 ## Server specs
@@ -95,6 +95,6 @@ shipments and invoices it made.
 ## Lint
 
 ```sh
-moqui lint --groovy runtime/component/mr-marble
+moqui lint --groovy runtime/components/addon/mr-marble
 moqui lint --screens <report.txt>
 ```

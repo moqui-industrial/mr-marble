@@ -6,15 +6,15 @@ Generated 2026-10-16 from the unchanged upstream source. No conversion has been 
 
 ## Revision and repository state
 
-- Fork: `git@github.com:moqui/MrSimpleScreens.git`; local directory: `runtime/component/MrSimpleScreens`.
+- Fork: `git@github.com:moqui/MrSimpleScreens.git`; local directory: `runtime/components/addon/MrSimpleScreens`.
 - Upstream: `https://github.com/moqui/SimpleScreens.git`; upstream/master and fork/master both point to `5aed7ffba7231babdccfb0bd46cb6db66195487c`.
 - Component name remains `SimpleScreens`; `component://SimpleScreens/...` references are unchanged.
 - All five origin repositories in this checkout were pulled using `git pull --ff-only origin`:
   - `.`: `d9d5f9f25d5b1c9674ebbf94a8e100be3203fe75`.
-  - `runtime/component/ironstone-boss`: `823ee25eea431cb1ce8812e698732d8600c3353e`.
-  - `runtime/component/mantle-udm`: `50be8e3acba2b844f31286aa60a7e9d8da9a2a79`.
-  - `runtime/component/mantle-usl`: `14d327b1f00e345fc2c16e189684171dfb748152`.
-  - `runtime/component/MrSimpleScreens`: `5aed7ffba7231babdccfb0bd46cb6db66195487c`.
+  - `runtime/components/addon/ironstone-boss`: `823ee25eea431cb1ce8812e698732d8600c3353e`.
+  - `runtime/components/addon/mantle-udm`: `50be8e3acba2b844f31286aa60a7e9d8da9a2a79`.
+  - `runtime/components/addon/mantle-usl`: `14d327b1f00e345fc2c16e189684171dfb748152`.
+  - `runtime/components/addon/MrSimpleScreens`: `5aed7ffba7231babdccfb0bd46cb6db66195487c`.
 
 ## Scope and interpretation
 
@@ -31,7 +31,7 @@ Not a claim that static lint proves every required semantic change: decimals, em
 - `moqui load types=all`: exit 0; 8,334 records, including 11 MyAccount document records and 191 SimpleScreens setup records, with entity ECAs enabled.
 - HTTP server started; `/health` and `/Login` returned 200, and the john.doe login returned to `/`. `/apps/SimpleScreens` and tested descendants returned 404. `/apps/my` returned 200 but its HTML contained a TopNavSection template error; HTTP 200 is not proof of successful rendering.
 - `moqui lint --screens`: 2,050 failures across the isolated runtime, including base components; not a SimpleScreens-only count.
-- Component-only `moqui lint --groovy runtime/component/MrSimpleScreens`: 380 scanned files; 9,738 expression sites; 2,215 parse failures (1,893 site failures, 322 generated-action/template-body failures); 2,366 flagged sites. This command returned 0 despite reporting failures.
+- Component-only `moqui lint --groovy runtime/components/addon/MrSimpleScreens`: 380 scanned files; 9,738 expression sites; 2,215 parse failures (1,893 site failures, 322 generated-action/template-body failures); 2,366 flagged sites. This command returned 0 despite reporting failures.
 - Component idiom counts confirm the earlier inventory: 976 map literals, 798 Elvis expressions and 26 context-plus sites. Counts overlap and are not counts of unique blocks.
 - Converter was run in report-only mode; no `--write`.
 
@@ -27810,8 +27810,8 @@ git pull --ff-only origin
 # Repeat in each independent component repository.
 MOQUI_RUNTIME=<isolated-runtime> target/release/moqui load types=all
 MOQUI_RUNTIME=<isolated-runtime> target/release/moqui lint --screens <report-file>
-MOQUI_RUNTIME=<isolated-runtime> target/release/moqui lint --groovy runtime/component/MrSimpleScreens
-MOQUI_RUNTIME=<isolated-runtime> target/release/moqui convert --groovy runtime/component/MrSimpleScreens
+MOQUI_RUNTIME=<isolated-runtime> target/release/moqui lint --groovy runtime/components/addon/MrSimpleScreens
+MOQUI_RUNTIME=<isolated-runtime> target/release/moqui convert --groovy runtime/components/addon/MrSimpleScreens
 ```
 
 Raw baseline logs/reports: `/tmp/mrss-uW9I41/{load.log,server.log,http-results.json,screen-lint.txt,groovy-lint.txt,convert-dry-run.txt}`. Temporary paths are local evidence only; source blocks and baseline summary are preserved in this document.
@@ -27836,36 +27836,36 @@ Idiom totals (sites, files)
   list-star                          1     1
 
 Parse failures
-  runtime/component/MrMarbleERP/data/MarbleErpSetupData.xml:49 moqui.entity.document.DataDocumentLink@linkUrl: expression `pagePath?:''` is Groovy (?:)
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:29 set@from: expression `orgPartyRoles*.partyId` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:56 link@parameter-map: expression `[orderType:'Sales', statusId:'OrderPlaced,OrderProcessing', statusId_op:'in']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:58 link@parameter-map: expression `[orderType:'Sales', statusId:'OrderApproved,OrderSent', statusId_op:'in']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:60 link@parameter-map: expression `[orderType:'Sales', statusId:'OrderHold']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:65 link@parameter-map: expression `[statusId:'ReqSubmitted', roleTypeId:'Customer']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:67 link@parameter-map: expression `[statusId:'ReqReviewed,ReqInProgress', statusId_op:'in', roleTypeId:'Customer']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:94 link@parameter-map: expression `[orderType:'Sales']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:101 link@parameter-map: expression `[parentShipmentType:'ShpTpOutgoing']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:121 link@parameter-map: expression `[invoiceType:'Receivable']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:126 link@parameter-map: expression `[invoiceType:'Payable',invoiceTypeEnumId:'InvoiceCreditMemo']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:144 link@parameter-map: expression `[paymentType:'Incoming',paymentTypeEnumId:'PtInvoicePayment']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:152 link@parameter-map: expression `[returnType:'Customer']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:156 link@parameter-map: expression `[shipmentTypeEnumId:'ShpTpSalesReturn']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:160 link@parameter-map: expression `[invoiceType:'Payable',invoiceTypeEnumId:'InvoiceReturn']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:164 link@parameter-map: expression `[paymentType:'Outgoing',paymentTypeEnumId:'PtRefund']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:171 link@parameter-map: expression `[roleTypeId:'OrgInternal']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:177 link@parameter-map: expression `[roleTypeId:'Employee']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:199 link@parameter-map: expression `[assetTypeEnumId:'AstTpInventory']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:257 link@parameter-map: expression `[orderType:'Purchase']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:265 link@parameter-map: expression `[parentShipmentType:'ShpTpIncoming']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:272 link@parameter-map: expression `[invoiceType:'Payable']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:277 link@parameter-map: expression `[invoiceType:'Receivable',invoiceTypeEnumId:'InvoiceCreditMemo']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:282 link@parameter-map: expression `[paymentType:'Outgoing',paymentTypeEnumId:'PtInvoicePayment']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:289 link@parameter-map: expression `[returnType:'Supplier']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:293 link@parameter-map: expression `[shipmentTypeEnumId:'ShpTpPurchaseReturn']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:297 link@parameter-map: expression `[invoiceType:'Receivable',invoiceTypeEnumId:'InvoiceReturn']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:301 link@parameter-map: expression `[paymentType:'Incoming',paymentTypeEnumId:'PtRefund']` is not JavaScript
-  runtime/component/MrMarbleERP/screen/marble/dashboard.xml:29 set generated script is not JavaScript: Unexpected token
-  runtime/component/MrMarbleERP/screen/marble.xml:72 text body: template: expression `(activeOrg.pseudoId)!` is not JavaScript
+  runtime/components/addon/MrMarbleERP/data/MarbleErpSetupData.xml:49 moqui.entity.document.DataDocumentLink@linkUrl: expression `pagePath?:''` is Groovy (?:)
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:29 set@from: expression `orgPartyRoles*.partyId` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:56 link@parameter-map: expression `[orderType:'Sales', statusId:'OrderPlaced,OrderProcessing', statusId_op:'in']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:58 link@parameter-map: expression `[orderType:'Sales', statusId:'OrderApproved,OrderSent', statusId_op:'in']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:60 link@parameter-map: expression `[orderType:'Sales', statusId:'OrderHold']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:65 link@parameter-map: expression `[statusId:'ReqSubmitted', roleTypeId:'Customer']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:67 link@parameter-map: expression `[statusId:'ReqReviewed,ReqInProgress', statusId_op:'in', roleTypeId:'Customer']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:94 link@parameter-map: expression `[orderType:'Sales']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:101 link@parameter-map: expression `[parentShipmentType:'ShpTpOutgoing']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:121 link@parameter-map: expression `[invoiceType:'Receivable']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:126 link@parameter-map: expression `[invoiceType:'Payable',invoiceTypeEnumId:'InvoiceCreditMemo']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:144 link@parameter-map: expression `[paymentType:'Incoming',paymentTypeEnumId:'PtInvoicePayment']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:152 link@parameter-map: expression `[returnType:'Customer']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:156 link@parameter-map: expression `[shipmentTypeEnumId:'ShpTpSalesReturn']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:160 link@parameter-map: expression `[invoiceType:'Payable',invoiceTypeEnumId:'InvoiceReturn']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:164 link@parameter-map: expression `[paymentType:'Outgoing',paymentTypeEnumId:'PtRefund']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:171 link@parameter-map: expression `[roleTypeId:'OrgInternal']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:177 link@parameter-map: expression `[roleTypeId:'Employee']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:199 link@parameter-map: expression `[assetTypeEnumId:'AstTpInventory']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:257 link@parameter-map: expression `[orderType:'Purchase']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:265 link@parameter-map: expression `[parentShipmentType:'ShpTpIncoming']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:272 link@parameter-map: expression `[invoiceType:'Payable']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:277 link@parameter-map: expression `[invoiceType:'Receivable',invoiceTypeEnumId:'InvoiceCreditMemo']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:282 link@parameter-map: expression `[paymentType:'Outgoing',paymentTypeEnumId:'PtInvoicePayment']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:289 link@parameter-map: expression `[returnType:'Supplier']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:293 link@parameter-map: expression `[shipmentTypeEnumId:'ShpTpPurchaseReturn']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:297 link@parameter-map: expression `[invoiceType:'Receivable',invoiceTypeEnumId:'InvoiceReturn']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:301 link@parameter-map: expression `[paymentType:'Incoming',paymentTypeEnumId:'PtRefund']` is not JavaScript
+  runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml:29 set generated script is not JavaScript: Unexpected token
+  runtime/components/addon/MrMarbleERP/screen/marble.xml:72 text body: template: expression `(activeOrg.pseudoId)!` is not JavaScript
 
 Known exclusions (not scanned)
 
@@ -27873,11 +27873,11 @@ FreeMarker
 
 Per file (flagged sites only; before text)
 
-runtime/component/MrMarbleERP/data/MarbleErpSetupData.xml (8 sites, 1 flagged)
+runtime/components/addon/MrMarbleERP/data/MarbleErpSetupData.xml (8 sites, 1 flagged)
   49: moqui.entity.document.DataDocumentLink@linkUrl [elvis] expression `pagePath?:''` is Groovy (?:)
       before: pagePath?:''
 
-runtime/component/MrMarbleERP/screen/marble/dashboard.xml (38 sites, 27 flagged)
+runtime/components/addon/MrMarbleERP/screen/marble/dashboard.xml (38 sites, 27 flagged)
   29: set@from [list-star] expression `orgPartyRoles*.partyId` is not JavaScript
       before: orgPartyRoles*.partyId
   56: link@parameter-map [map-literal] expression `[orderType:'Sales', statusId:'OrderPlaced,OrderProcessing', statusId_op:'in']` is not JavaScript
