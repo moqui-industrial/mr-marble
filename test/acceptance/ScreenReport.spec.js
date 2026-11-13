@@ -41,8 +41,8 @@ feature("the screen report is written", {
         const discovery = new Set(screens.getNoRequiredParameterPaths(SKIP).map((path) => String(path).trim()))
         const files = listFiles(`${COMPONENT}/screen`, "screen/", []).sort()
         // the specs of both suites: the sweeps that reach most screens are acceptance tests
-        const specNames = listFiles(`${COMPONENT}/test`, "test/", []).concat(listFiles(`${COMPONENT}/acceptance`, "acceptance/", []))
-            .filter((path) => /^(test|acceptance)\/[^/]+\.spec\.js$/.test(path) && path !== "acceptance/ScreenReport.spec.js").sort()
+        const specNames = listFiles(`${COMPONENT}/test`, "test/", [])
+            .filter((path) => /^test\/(acceptance\/)?[^/]+\.spec\.js$/.test(path) && path !== "test/acceptance/ScreenReport.spec.js").sort()
         const specText = specNames.map(textOf).join("")
         const smoke = textOf("test/client/BrowserSmoke.spec.js")
         const rows = files.filter((file) => file.endsWith(".xml"))
