@@ -88,6 +88,10 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response url="${ec.web.getWebappRootUrl(false, null)}/fop/apps/${appRoot}/Accounting/Invoice/PrintInvoice" url-type="plain">
             <parameter name="invoiceId"/><parameter name="original"/><parameter name="filename" value="Invoice${original == 'true' ? 'Original' : 'Current'}-${invoiceId}.pdf"/></default-response>
     </transition>
+    <transition name="createInvoiceTerm"><service-call name="create#mantle.account.invoice.InvoiceTerm"/>
+        <default-response url="."/></transition>
+    <transition name="deleteInvoiceTerm"><service-call name="delete#mantle.account.invoice.InvoiceTerm"/>
+        <default-response url="."/></transition>
 
     <actions>
         <service-call name="mantle.account.InvoiceServices.get#InvoiceDisplayInfo" in-map="{invoiceId:invoiceId}" out-map="context"/>
@@ -297,6 +301,49 @@ along with this software (see the LICENSE.md file). If not, see
                     <fields-not-referenced/>
                 </field-layout>
             </form-single>
+
+            <section name="TermsSection"><actions>
+                <entity-find entity-name="mantle.account.invoice.InvoiceTerm" list="invoiceTermList">
+                    <econdition field-name="invoiceId"/><order-by field-name="invoiceItemSeqId,invoiceTermId"/></entity-find>
+            </actions><widgets>
+                <container-box><box-header title="Terms and Conditions"/><box-toolbar>
+                    <container-dialog id="AddInvoiceTermDialog" button-text="Add Term" condition="invoiceEditable">
+                        <form-single name="AddInvoiceTermForm" transition="createInvoiceTerm">
+                            <field name="invoiceId"><default-field><hidden/></default-field></field>
+                            <field name="termTypeEnumId"><default-field title="Term Type">
+                                <drop-down allow-empty="true">
+                                    <entity-options key="${enumId}" text="${description}">
+                                        <entity-find entity-name="moqui.basic.Enumeration">
+                                            <econditions combine="or">
+                                                <econdition field-name="parentEnumId" value="TtInco"/>
+                                                <econdition field-name="parentEnumId" value="ItemVatTax"/>
+                                                <econdition field-name="enumId" operator="in" value="ItemShipping,ItemShippingOther,TtOther"/>
+                                            </econditions>
+                                            <econdition field-name="enumId" operator="not-equals" value="ItemVatTaxTotal"/>
+                                            <order-by field-name="description"/>
+                                        </entity-find>
+                                    </entity-options>
+                                </drop-down>
+                            </default-field></field>
+                            <field name="termNumber"><default-field title="Value / Days"><text-line size="10"/></default-field></field>
+                            <field name="termText"><default-field title="Description / Note"><text-line size="50"/></default-field></field>
+                            <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                        </form-single>
+                    </container-dialog>
+                </box-toolbar><box-body-nopad>
+                    <form-list name="InvoiceTermsList" list="invoiceTermList" skip-form="true">
+                        <field name="termTypeEnumId"><default-field title="Type">
+                            <display-entity entity-name="moqui.basic.Enumeration"/></default-field></field>
+                        <field name="termNumber"><default-field title="Value"><display/></default-field></field>
+                        <field name="termText"><default-field title="Details"><display/></default-field></field>
+                        <field name="deleteLink"><default-field title="">
+                            <link url="deleteInvoiceTerm" text="Remove" link-type="hidden-form" btn-type="danger"
+                                    condition="invoiceEditable" confirmation="Remove this term?"
+                                    parameter-map="{invoiceTermId:invoiceTermId, invoiceId:invoiceId}"/>
+                        </default-field></field>
+                    </form-list>
+                </box-body-nopad></container-box>
+            </widgets></section>
 
             <section name="ContentSection"><actions>
                 <entity-find entity-name="mantle.account.invoice.InvoiceContent" list="contentList">
