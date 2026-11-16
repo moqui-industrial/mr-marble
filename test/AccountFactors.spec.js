@@ -40,3 +40,32 @@ feature("the factor list of My Account carries no authenticator secret", {
         factorId = null
     },
 })
+
+// verifyUserAuthcFactorTotp calls the framework's code check (validate#UserAuthcFactorCode; it named a service that does not
+// exist): a wrong code is refused and leaves the authenticator unverified
+feature("My Account's authenticator verify checks the code against the user's own factors", {
+    when() {
+        const sys = (run) => {
+            const disabled = ec.artifactExecution.disableAuthz()
+            try { return run() } finally { if (!disabled) ec.artifactExecution.enableAuthz() }
+        }
+        factorId = sys(() => ec.service.sync().name("org.moqui.impl.UserServices.create#UserAuthcFactorTotp").parameters({ userId: USER }).call()).factorId
+        const rendered = ec.screen.makeTest().rootScreen(webroot)
+            .render("apps/my/User/Account/verifyUserAuthcFactorTotp", { code: "000000x" }, "post")
+        const errors = rendered.errorMessages.join(" | ")
+        ec.message.clearErrors()
+        const factor = sys(() => ec.entity.find("moqui.security.UserAuthcFactor").condition("factorId", factorId).one())
+        return { errors, needsValidation: factor.needsValidation }
+    },
+    then({ errors, needsValidation }) {
+        errors.includes("Authentication code is not valid")
+        !/not found|does not exist|No service/i.test(errors)
+        needsValidation == "Y"
+    },
+    cleanup() {
+        const disabled = ec.artifactExecution.disableAuthz()
+        try { if (factorId) ec.entity.find("moqui.security.UserAuthcFactor").condition("factorId", factorId).deleteAll() }
+        finally { if (!disabled) ec.artifactExecution.enableAuthz() }
+        factorId = null
+    },
+})
