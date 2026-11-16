@@ -42,6 +42,9 @@ The regression suite (`test/`):
 - `ClientAccess`: the **test-only** grant the client specs' server needs (below).
 - `OrderRoleFilters`: evaluates `FindOrder.xml`'s two OrgInternal `econdition ignore` expressions for ten `orderType`
   values against Java's case-insensitive sales/purchase behavior.
+- `MessageRecipient`: My Account's message with no To party names no recipient ("to null" before).
+- `WikiPageTui`: a markdown wiki page reaches the terminal as one markdown node with its id.
+- `CreateDialogValues`: New Request's initial status and New Product's name are not taken from the find's parameters.
 - `ScreenReport`: lists every screen with whether a sweep, a targeted spec or the browser smoke reaches it, and its
   companion files; ignored unless `mrss_screen_report` names the file. The checklist in `../MIGRATION-STATUS.md` is
   ticked by hand.
