@@ -134,7 +134,7 @@ along with this software (see the LICENSE.md file). If not, see
             </form-single>
         </container-dialog>
 
-        <link url="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax"
+        <link url="https://docs.opensearch.org/latest/query-dsl/full-text/query-string/#query-string-syntax"
                 url-type="plain" link-type="anchor" target-window="_blank" text="Search String Reference"/>
 
         <form-list name="ProductsForm" list="documentList" list-entry="document" skip-form="true" header-dialog="true"

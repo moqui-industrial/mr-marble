@@ -72,7 +72,7 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="sequenceNum"><header-field title="Sequence Num" show-order-by="case-insensitive"/>
                 <default-field><text-line size="4" format="#"/></default-field></field>
 
-            <field name="submitButton" align="right"><default-field title="Update"><submit/></default-field></field>
+            <field name="submitButton" align="right"><header-field title="Find"><submit/></header-field><default-field title="Update"><submit/></default-field></field>
             <field name="deleteButton" align="right"><default-field title="">
                 <link url="deleteProductStoreParty" icon="fa fa-trash"
                       parameter-map="{productStoreId:productStoreId, partyId:partyId, roleTypeId:roleTypeId, fromDate:fromDate}"

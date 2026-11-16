@@ -40,7 +40,7 @@ along with this software (see the LICENSE.md file). If not, see
                     extends="component://mr-marble/screen/SimpleScreens/Party/FindParty.xml#CreateOrganizationForm"/>
         </container-dialog>
 
-        <link url="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax"
+        <link url="https://docs.opensearch.org/latest/query-dsl/full-text/query-string/#query-string-syntax"
                 url-type="plain" link-type="anchor" target-window="_blank" text="Search String Reference"/>
         <form-single name="OuterSearchForm" extends="component://mr-marble/screen/SimpleScreens/Party/FindParty.xml#OuterSearchForm"/>
 

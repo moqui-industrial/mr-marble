@@ -106,7 +106,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <header-field title="Thru Date" show-order-by="case-insensitive"><date-period allow-empty="true"/></header-field>
                 <default-field><date-time type="date-time"/></default-field>
             </field>
-            <field name="submitButton" align="right"><default-field title="Update"><submit/></default-field></field>
+            <field name="submitButton" align="right"><header-field title="Find"><submit/></header-field><default-field title="Update"><submit/></default-field></field>
             <field name="deleteButton" align="right"><default-field title="">
                 <link url="deleteStoreSetting" icon="fa fa-trash"
                       parameter-map="{productStoreId:productStoreId, settingTypeEnumId:settingTypeEnumId, fromDate:fromDate}"
