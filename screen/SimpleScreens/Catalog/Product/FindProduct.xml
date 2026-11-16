@@ -26,7 +26,8 @@ along with this software (see the LICENSE.md file). If not, see
     <widgets>
         <container-dialog id="NewProductDialog" button-text="New Product">
             <form-single name="NewProductForm" transition="createProduct">
-                <field name="productName"><default-field><text-line/></default-field></field>
+                <!-- from null: a new product's name is not the find's -->
+                <field name="productName" from="null"><default-field><text-line/></default-field></field>
                 <field name="productTypeEnumId"><default-field title="Product Type">
                     <widget-template-include location="component://webroot/template/screen/BasicWidgetTemplates.xml#enumDropDown">
                         <set field="enumTypeId" value="ProductType"/></widget-template-include>
