@@ -1,7 +1,8 @@
 // Party › Payment Methods (screen/SimpleScreens/Party/EditParty.xml, its UpdatePaymentMethodInfo dialog with
 // template/party/PartyForms.xml#PaymentMethodInfo): the list shows a bank account's number masked; the edit form has the
-// whole number in its input only for a payment editor (get#PartyPaymentMethodInfo fullNumbers; john.doe holds
-// CARD_NUMBER_EDIT), anyone else sees it masked and sends none (mr-moqui plans/Security-Review-Low.md SEC-BAP-04).
+// whole number in its input only for the owner's own user or a holder of PAYMENT_NUMBER_VIEW (get#PartyPaymentMethodInfo
+// fullNumbers; john.doe holds it through ADMIN), anyone else sees it masked and sends none (mr-moqui
+// plans/Security-Review-Low.md SEC-BAP-04). Who gets fullNumbers is Mantle's rule, tested in Mantle PaymentMethodServices.
 // Run: ./moq test mr-marble --spec PaymentMethodForm
 const webroot = "component://webroot/screen/webroot.xml"
 const PARTY = "CustJqp"
@@ -25,7 +26,7 @@ spec({
     },
 })
 
-feature("the edit form of a bank account has the whole number for a payment editor; the party's list shows it masked", {
+feature("the edit form of a bank account has the whole number for a holder of PAYMENT_NUMBER_VIEW; the party's list shows it masked", {
     when() {
         const form = ec.screen.makeTest().rootScreen(webroot)
             .render("apps/marble/Party/EditParty/UpdatePaymentMethodInfo", { partyId: PARTY, paymentMethodId: bankId }, "get")
