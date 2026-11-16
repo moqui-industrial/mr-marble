@@ -41,16 +41,16 @@ feature("the organization menu selects and clears Ziziwork Retail", {
         page.locator("#navbar-buttons > #active-org-menu").count() == 1
         page.click("#active-org-menu summary")
         page.evaluate(() => document.querySelector("#active-org-menu").open) == true
-        page.click('#active-org-menu a[href$="preferenceValue=ORG_ZIZI_RETAIL"]')
+        page.click('#active-org-menu button[data-org="ORG_ZIZI_RETAIL"]')
         page.waitFor(() => {
             const summary = document.querySelector("#active-org-menu summary")
             return summary && summary.innerText.includes("ZIRET")
         })
         page.click("#active-org-menu summary")
-        page.click('#active-org-menu a[href$="preferenceValue="]')
+        page.click('#active-org-menu button[data-org=""]')
         page.waitFor(() => {
             const summary = document.querySelector("#active-org-menu summary")
-            const clear = document.querySelector('#active-org-menu a[href$="preferenceValue="]')
+            const clear = document.querySelector('#active-org-menu button[data-org=""]')
             return summary && summary.innerText.includes("Organization") && !clear
         })
     },
