@@ -70,8 +70,17 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response url="."/></transition>
     <transition name="sendOrderStoreEmail"><service-call name="mantle.order.OrderInfoServices.send#OrderStoreEmail"/>
         <default-response url="."/></transition>
-    <transition name="sendEmailMessage"><service-call name="org.moqui.mail.EmailServices.send#EmailMessage"/>
-        <default-response url="."/></transition>
+    <!-- sends again only a message of this order, as its list finds them, never any message by its id
+        (plans/Security-Review-Medium.md SEC-MAIL-64) -->
+    <transition name="sendEmailMessage"><parameter name="emailMessageId"/><actions>
+        <set field="recordEmailMessage" from="null"/>
+        <if condition="emailMessageId &amp;&amp; orderId">
+            <entity-find-one entity-name="mantle.order.OrderEmailMessage" value-field="recordEmailMessage">
+                <field-map field-name="orderId"/><field-map field-name="emailMessageId"/></entity-find-one></if>
+        <if condition="recordEmailMessage == null">
+            <message error="true">Email message ${emailMessageId ?? ''} not found for this order</message><return/></if>
+        <service-call name="org.moqui.mail.EmailServices.send#EmailMessage" in-map="{emailMessageId:emailMessageId}"/>
+    </actions><default-response url="."/></transition>
 
     <transition name="recalcOrderPartItemAmounts"><service-call name="mantle.order.OrderServices.recalc#OrderPartItemAmounts"/>
         <default-response url="."/></transition>

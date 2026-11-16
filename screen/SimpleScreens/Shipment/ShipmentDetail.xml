@@ -60,8 +60,17 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="sendShipmentStoreEmail"><service-call name="mantle.shipment.ShipmentServices.send#ShipmentStoreEmail"/>
         <default-response url="."/></transition>
-    <transition name="sendEmailMessage"><service-call name="org.moqui.mail.EmailServices.send#EmailMessage"/>
-        <default-response url="."/></transition>
+    <!-- sends again only a message of this shipment, as its list finds them, never any message by its id
+        (plans/Security-Review-Medium.md SEC-MAIL-64) -->
+    <transition name="sendEmailMessage"><parameter name="emailMessageId"/><actions>
+        <set field="recordEmailMessage" from="null"/>
+        <if condition="emailMessageId &amp;&amp; shipmentId">
+            <entity-find-one entity-name="mantle.shipment.ShipmentEmailMessage" value-field="recordEmailMessage">
+                <field-map field-name="shipmentId"/><field-map field-name="emailMessageId"/></entity-find-one></if>
+        <if condition="recordEmailMessage == null">
+            <message error="true">Email message ${emailMessageId ?? ''} not found for this shipment</message><return/></if>
+        <service-call name="org.moqui.mail.EmailServices.send#EmailMessage" in-map="{emailMessageId:emailMessageId}"/>
+    </actions><default-response url="."/></transition>
 
     <transition name="createShipmentParty"><service-call name="create#mantle.shipment.ShipmentParty"/>
         <default-response url="."/></transition>

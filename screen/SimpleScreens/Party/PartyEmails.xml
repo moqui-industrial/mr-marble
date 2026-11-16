@@ -17,8 +17,35 @@ along with this software (see the LICENSE.md file). If not, see
 
     <parameter name="partyId" required="true"/>
 
-    <transition name="sendEmailMessage"><service-call name="org.moqui.mail.EmailServices.send#EmailMessage"/>
-        <default-response url="."/></transition>
+    <!-- sends again only a message of this party's, as the list below finds them (by the party's users or its email
+        addresses), never any message by its id (plans/Security-Review-Medium.md SEC-MAIL-64) -->
+    <transition name="sendEmailMessage"><parameter name="emailMessageId"/><actions>
+        <entity-find entity-name="moqui.security.UserAccount" list="userAccountList">
+            <econdition field-name="partyId"/></entity-find>
+        <set field="userIdList" from="userAccountList.map(it => it.userId)"/>
+        <entity-find entity-name="mantle.party.contact.PartyContactMechInfo" list="emailPcmList">
+            <econdition field-name="partyId"/>
+            <econdition field-name="contactMechTypeEnumId" value="CmtEmailAddress"/>
+            <select-field field-name="infoString"/>
+        </entity-find>
+        <set field="emailAddressSet" from="Array.from(new Set(emailPcmList.map(it => it.infoString)))"/>
+        <set field="emailMessageList" from="[]"/>
+        <if condition="emailMessageId &amp;&amp; (userIdList.length || emailAddressSet.length)">
+            <entity-find entity-name="moqui.basic.email.EmailMessage" list="emailMessageList" limit="1">
+                <econdition field-name="emailMessageId"/>
+                <econditions combine="or">
+                    <econdition field-name="fromUserId" operator="in" from="userIdList" ignore-if-empty="true"/>
+                    <econdition field-name="toUserId" operator="in" from="userIdList" ignore-if-empty="true"/>
+                    <econdition field-name="toAddresses" operator="in" from="emailAddressSet" ignore-if-empty="true"/>
+                    <econdition field-name="fromAddress" operator="in" from="emailAddressSet" ignore-if-empty="true"/>
+                </econditions>
+                <select-field field-name="emailMessageId"/>
+            </entity-find>
+        </if>
+        <if condition="!emailMessageList.length">
+            <message error="true">Email message ${emailMessageId ?? ''} not found for this party</message><return/></if>
+        <service-call name="org.moqui.mail.EmailServices.send#EmailMessage" in-map="{emailMessageId:emailMessageId}"/>
+    </actions><default-response url="."/></transition>
 
     <!-- One message of this party's, as the list below finds them: by the party's users or its email addresses, never
         by the id alone (any message's body, a password reset's included, was readable). Its HTML is mail, from outside
