@@ -266,7 +266,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <actions><script>sri.baseLinkUrl(baseLinkUrl)</script></actions>
                         <widgets><render-mode><text type="html,vuet,qvt" template="true"
                                 location="${pageLocation||''}${versionName &amp;&amp; currentVersionName != versionName ? '#' + versionName.substring(0, 12) : ''}"/>
-                            <text type="tui"><![CDATA[${JSON.stringify(wikiType == 'md' ? {t: 'markdown', text: tuiPageText || ''} : {t: 'text', style: 'pre', text: tuiPageText || ''})}]]></text></render-mode></widgets>
+                            <text type="tui"><![CDATA[${JSON.stringify(wikiType == 'md' ? {t: 'markdown', id: 'WikiPageText', text: tuiPageText || ''} : {t: 'text', style: 'pre', text: tuiPageText || ''})}]]></text></render-mode></widgets>
                         <fail-widgets><include-screen location="${wikiSpace.decoratorScreenLocation}"/></fail-widgets>
                     </section>
                     <section name="ResetBaseLink"><actions><script>sri.baseLinkUrl(null)</script></actions><widgets/></section>
