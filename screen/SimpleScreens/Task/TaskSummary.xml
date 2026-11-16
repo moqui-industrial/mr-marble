@@ -224,7 +224,7 @@ along with this software (see the LICENSE.md file). If not, see
                         </form-single>
                     </container-dialog>
                 </widgets><fail-widgets>
-                    <link url="../EditTimeEntries" text="Clock Out" btn-type="success"/>
+                    <link id="ClockOutLink" url="../EditTimeEntries" text="Clock Out" btn-type="success"/>
                 </fail-widgets></section>
             </box-toolbar><box-body>
                 <container><label text="${ec.l10n.localize('Project')}: " type="strong"/></container>

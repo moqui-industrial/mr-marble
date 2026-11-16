@@ -18,8 +18,13 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="findFacility"><default-response url="."/></transition>
     <transition name="editFacility"><default-response url="../EditFacility"/></transition>
 
-    <transition name="createFacility"><service-call name="create#mantle.facility.Facility"/>
-        <default-response url="../EditFacility"/></transition>
+    <transition name="createFacility">
+        <actions>
+            <!-- a facility is found by its name: an empty one is refused, here as in the dialog -->
+            <if condition="!String(facilityName || '').trim()"><return error="true" message="Enter the facility name"/></if>
+            <service-call name="create#mantle.facility.Facility" in-map="context" out-map="context"/>
+        </actions>
+        <default-response url="../EditFacility"/><error-response url="."/></transition>
     <transition-include name="searchPartyList" location="component://mr-marble/template/party/PartyForms.xml"/>
 
     <actions>
@@ -30,7 +35,7 @@ along with this software (see the LICENSE.md file). If not, see
         <container-dialog id="NewFacilityDialog" button-text="New Facility">
             <form-single name="NewFacilityForm" transition="createFacility">
                 <field name="pseudoId"><default-field title="ID"><text-line size="15"/></default-field></field>
-                <field name="facilityName"><default-field><text-line/></default-field></field>
+                <field name="facilityName"><default-field required="true"><text-line/></default-field></field>
                 <field name="facilityTypeEnumId"><default-field title="Facility Type">
                     <widget-template-include location="component://webroot/template/screen/BasicWidgetTemplates.xml#enumDropDown">
                         <set field="enumTypeId" value="FacilityType"/><set field="noCurrentSelectedKey" value="FcTpWarehouse"/></widget-template-include>

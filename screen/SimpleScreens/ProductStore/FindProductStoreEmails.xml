@@ -96,7 +96,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <header-field title="Web Order BCC" show-order-by="case-insensitive"><text-find size="25" hide-options="true"/></header-field>
                 <default-field><text-line size="30"/></default-field>
             </field>
-            <field name="submitButton" align="right"><default-field title="Update"><submit/></default-field></field>
+            <field name="submitButton" align="right"><header-field title="Find"><submit/></header-field><default-field title="Update"><submit/></default-field></field>
             <field name="deleteButton" align="right"><default-field title="">
                 <link url="deleteStoreEmail" icon="fa fa-trash"
                       parameter-map="{productStoreId:productStoreId, emailTypeEnumId:emailTypeEnumId, fromDate:fromDate}"

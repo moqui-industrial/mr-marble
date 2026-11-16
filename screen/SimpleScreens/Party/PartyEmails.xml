@@ -20,9 +20,40 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="sendEmailMessage"><service-call name="org.moqui.mail.EmailServices.send#EmailMessage"/>
         <default-response url="."/></transition>
 
+    <!-- One message of this party's, as the list below finds them: by the party's users or its email addresses, never
+        by the id alone (any message's body, a password reset's included, was readable). Its HTML is mail, from outside
+        and not cleaned, so it is sent sandboxed: no script, no origin of the application's (plans/Security-Review.md
+        SEC-MAIL-63). -->
     <transition name="EmailMessage" read-only="true"><parameter name="emailMessageId"/><actions>
-        <entity-find-one entity-name="moqui.basic.email.EmailMessage" value-field="emailMessage"/>
-        <script>ec.web.sendTextResponse(emailMessage?.body, "text/html", null)</script>
+        <entity-find entity-name="moqui.security.UserAccount" list="userAccountList">
+            <econdition field-name="partyId"/></entity-find>
+        <set field="userIdList" from="userAccountList.map(it => it.userId)"/>
+        <entity-find entity-name="mantle.party.contact.PartyContactMechInfo" list="emailPcmList">
+            <econdition field-name="partyId"/>
+            <econdition field-name="contactMechTypeEnumId" value="CmtEmailAddress"/>
+            <select-field field-name="infoString"/>
+        </entity-find>
+        <set field="emailAddressSet" from="Array.from(new Set(emailPcmList.map(it => it.infoString)))"/>
+        <set field="emailMessage" from="null"/>
+        <if condition="emailMessageId &amp;&amp; (userIdList.length || emailAddressSet.length)">
+            <entity-find entity-name="moqui.basic.email.EmailMessage" list="emailMessageList" limit="1">
+                <econdition field-name="emailMessageId"/>
+                <econditions combine="or">
+                    <econdition field-name="fromUserId" operator="in" from="userIdList" ignore-if-empty="true"/>
+                    <econdition field-name="toUserId" operator="in" from="userIdList" ignore-if-empty="true"/>
+                    <econdition field-name="toAddresses" operator="in" from="emailAddressSet" ignore-if-empty="true"/>
+                    <econdition field-name="fromAddress" operator="in" from="emailAddressSet" ignore-if-empty="true"/>
+                </econditions>
+            </entity-find>
+            <set field="emailMessage" from="emailMessageList[0] ?? null"/>
+        </if>
+        <if condition="emailMessage == null">
+            <message error="true">Email message ${emailMessageId ?? ''} not found for this party</message><return/></if>
+        <script>
+            ec.web.response.setHeader("Content-Security-Policy", "sandbox; default-src 'none'; img-src data: https:; style-src 'unsafe-inline'")
+            ec.web.response.setHeader("X-Content-Type-Options", "nosniff")
+            ec.web.sendTextResponse(emailMessage.body, "text/html", null)
+        </script>
     </actions><default-response type="none"/></transition>
 
     <actions>

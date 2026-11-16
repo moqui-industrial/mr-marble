@@ -117,15 +117,15 @@ along with this software (see the LICENSE.md file). If not, see
                 </widgets></section-iterate>
             </default-field></field>
 
-            <field name="moveDialog"><default-field>
+            <field name="moveDialog"><default-field title="">
                 <dynamic-dialog id="QuickMoveDialog" button-text="Move" transition="QuickMove"/>
             </default-field></field>
 
-            <field name="moveLink"><default-field title="Move Link">
+            <field name="moveLink"><default-field title="">
                 <link url="selectAsset" text="Move Screen" parameter-map="{quantity:quantity}"/>
                 <link url="moveAsset" text="Move Asset" condition="assetId" parameter-map="{quantity:quantity}"/>
             </default-field></field>
-            <field name="assetSummaryLink"><default-field title="Assets Link">
+            <field name="assetSummaryLink"><default-field title="">
                 <link url="findSummary" text="Product Assets" parameter-map="{productId:productId, facilityId:facilityId}" link-type="anchor"/>
             </default-field></field>
 

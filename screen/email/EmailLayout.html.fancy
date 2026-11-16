@@ -169,7 +169,7 @@
             </td></tr>
         </table>
     </td></tr></table>
-    <#if has(emailMessageId) && has(storeDomain)>
-        <img src="http://${storeDomain}/email/${emailMessageId}.png" alt="${ec.l10n.localize('Email')}" title="${ec.l10n.localize('Email')}" style="display:block;" width="1" height="1" border="0"/></#if>
+    <#if has(emailViewKey) && has(storeDomain)>
+        <img src="http://${storeDomain}/email/${emailViewKey}.png" alt="${ec.l10n.localize('Email')}" title="${ec.l10n.localize('Email')}" style="display:block;" width="1" height="1" border="0"/></#if>
 </center></body>
 </html>

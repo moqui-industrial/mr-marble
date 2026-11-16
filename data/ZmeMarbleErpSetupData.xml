@@ -54,6 +54,8 @@ along with this software (see the LICENSE.md file). If not, see
             linkUrl="/apps/marble/Facility/EditFacility?facilityId=${facilityId}"/>
     <moqui.entity.document.DataDocumentLink dataDocumentId="MantleRequest" linkSeqId="41" linkSet="marble" label="Edit Request" urlType="screen"
             linkUrl="/apps/marble/Request/EditRequest?requestId=${requestId}"/>
+    <moqui.entity.document.DataDocumentLink dataDocumentId="MantleOrder" linkSeqId="41" linkSet="marble" label="Order Detail" urlType="screen"
+            linkUrl="/apps/marble/Order/OrderDetail?orderId=${orderId}"/>
 
     <moqui.entity.document.DataDocumentLink dataDocumentId="MantleParty" linkSeqId="41" linkSet="marble" label="Edit Party" urlType="screen"
             linkUrl="/apps/marble/Party/EditParty?partyId=${partyId}"/>
