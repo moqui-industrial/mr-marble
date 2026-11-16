@@ -3,6 +3,7 @@
 // (plans/Security-Review.md SEC-MAIL-63).
 // Send again (sendEmailMessage of Party › Emails and Order › Detail; Shipment and Invoice have the same check): only a message
 // of the party or the order shown, never any message by its id (plans/Security-Review-Medium.md SEC-MAIL-64).
+// The EmailMessage view of Order › Detail (Shipment and Invoice have the same check) likewise.
 // Run: ./moq test mr-marble --spec PartyEmailBody
 const webroot = "component://webroot/screen/webroot.xml"
 const PARTY = "CustJqp"
@@ -97,5 +98,23 @@ feature("the party's own message comes back sandboxed; another's is not found by
         own.header("X-Content-Type-Options") == "nosniff"
         !other.output.includes("reset password")
         other.errorMessages.join(" ").includes("not found")
+    },
+})
+
+// Order › Detail's EmailMessage (Shipment and Invoice have the same check): only a message of the order shown, sandboxed
+feature("an order's own message comes back sandboxed; another message is not found by its id", {
+    when() {
+        const view = (emailMessageId) => ec.screen.makeTest().rootScreen(webroot)
+            .render("apps/marble/Order/OrderDetail/EmailMessage", { orderId: ORDER, emailMessageId }, "get")
+        const own = view(OWN)
+        const other = view(OTHER)
+        ec.message.clearErrors()
+        return { own, other }
+    },
+    then({ own, other }) {
+        own.output.includes("Your order shipped")
+        String(own.header("Content-Security-Policy") ?? "").startsWith("sandbox")
+        !other.output.includes("reset password")
+        other.errorMessages.join(" ").includes("not found for this order")
     },
 })
