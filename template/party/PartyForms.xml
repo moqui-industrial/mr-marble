@@ -454,8 +454,11 @@ along with this software (see the LICENSE.md file). If not, see
                 <conditional-field title="Routing #" condition="isBankAccount"><text-line size="20"/></conditional-field>
                 <default-field><ignored/></default-field>
             </field>
+            <!-- the stored number is answered whole only to the owner's own user or a holder of PAYMENT_NUMBER_VIEW
+                (fullNumbers); anyone else sees it masked and does not send it, so a save keeps it (SEC-BAP-04) -->
             <field name="accountNumber">
-                <conditional-field title="Account #" condition="isBankAccount"><text-line size="20"/></conditional-field>
+                <conditional-field title="Account #" condition="isBankAccount &amp;&amp; (!paymentMethodId || fullNumbers)"><text-line size="20"/></conditional-field>
+                <conditional-field title="Account #" condition="isBankAccount"><display text="${maskedAccountNumber||''}" also-hidden="false"/></conditional-field>
                 <default-field><ignored/></default-field>
             </field>
 
@@ -471,6 +474,8 @@ along with this software (see the LICENSE.md file). If not, see
                 </conditional-field>
                 <default-field><ignored/></default-field>
             </field>
+            <!-- CARD_NUMBER_EDIT types a new number over a stored card; the input holds the stored one only with
+                fullNumbers (PAYMENT_NUMBER_VIEW or the owner), else it starts empty and an empty save keeps the card's -->
             <field name="cardNumber">
                 <conditional-field title="" condition="isCreditCard &amp;&amp; !paymentMethodId" tooltip="Card Number">
                     <text-line size="16"/></conditional-field>

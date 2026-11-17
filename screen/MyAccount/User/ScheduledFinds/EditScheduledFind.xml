@@ -33,7 +33,12 @@ along with this software (see the LICENSE.md file). If not, see
                     }
                 }
             </script>
-            <service-call name="update#moqui.screen.ScreenScheduled" in-map="context" out-map="context"/>
+            <!-- only the fields the form edits: the request names no other field of the row (its user, screen, saved find,
+                save location, group or delivery) -->
+            <set field="updateMap" from="Object.fromEntries(['renderMode', 'noResultsAbort', 'cronExpression', 'fromDate', 'thruDate',
+                    'emailTemplateId', 'emailSubject'].filter(name => context[name] != null).map(name => [name, context[name]]))"/>
+            <set field="updateMap.screenScheduledId" from="screenScheduledId"/>
+            <service-call name="update#moqui.screen.ScreenScheduled" in-map="updateMap"/>
         </actions>
         <default-response url=".."/>
     </transition>

@@ -70,15 +70,23 @@ along with this software (see the LICENSE.md file). If not, see
     <widgets>
         <section name="OrgChooserSection" condition="hideNav != 'true'"><widgets>
             <render-mode><text type="html"><![CDATA[
+            <!-- each choice posts to setPrefGoLast with the session token (a POST transition: a GET would change the preference
+                from any link, SEC-RTE-08) -->
             <details id="active-org-menu" class="menu">
                 <summary id="active-org-menu-link" title="Organization">
                     <i class="fa fa-globe"></i> ${WebUtilities.encodeHtml(activeOrg?.pseudoId ?? 'Organization')}</summary>
                 <ul>
                     <#if activeOrg>
-                        <li><a href="${WebUtilities.encodeHtml(sri.buildUrl('/apps/setPrefGoLast').url)}?preferenceKey=ACTIVE_ORGANIZATION&amp;preferenceValue=">Clear Active Organization</a></li>
+                        <li><form method="post" action="${WebUtilities.encodeHtml(sri.buildUrl('/apps/setPrefGoLast').url)}">
+                            <input type="hidden" name="moquiSessionToken" value="${WebUtilities.encodeHtml(ec.web.sessionToken ?? '')}">
+                            <input type="hidden" name="preferenceKey" value="ACTIVE_ORGANIZATION"><input type="hidden" name="preferenceValue" value="">
+                            <button type="submit" class="link" data-org="">Clear Active Organization</button></form></li>
                     </#if>
                     <#list userOrgList ?? [] as userOrg>
-                        <li><a href="${WebUtilities.encodeHtml(sri.buildUrl('/apps/setPrefGoLast').url)}?preferenceKey=ACTIVE_ORGANIZATION&amp;preferenceValue=${WebUtilities.encodeHtml(encodeURIComponent(userOrg.partyId))}">${WebUtilities.encodeHtml(userOrg.pseudoId ?? '')}: ${WebUtilities.encodeHtml(userOrg.organizationName ?? '')}</a></li>
+                        <li><form method="post" action="${WebUtilities.encodeHtml(sri.buildUrl('/apps/setPrefGoLast').url)}">
+                            <input type="hidden" name="moquiSessionToken" value="${WebUtilities.encodeHtml(ec.web.sessionToken ?? '')}">
+                            <input type="hidden" name="preferenceKey" value="ACTIVE_ORGANIZATION"><input type="hidden" name="preferenceValue" value="${WebUtilities.encodeHtml(userOrg.partyId)}">
+                            <button type="submit" class="link" data-org="${WebUtilities.encodeHtml(userOrg.partyId)}">${WebUtilities.encodeHtml(userOrg.pseudoId ?? '')}: ${WebUtilities.encodeHtml(userOrg.organizationName ?? '')}</button></form></li>
                     </#list>
                 </ul>
             </details>

@@ -70,8 +70,17 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response url="."/></transition>
     <transition name="sendOrderStoreEmail"><service-call name="mantle.order.OrderInfoServices.send#OrderStoreEmail"/>
         <default-response url="."/></transition>
-    <transition name="sendEmailMessage"><service-call name="org.moqui.mail.EmailServices.send#EmailMessage"/>
-        <default-response url="."/></transition>
+    <!-- sends again only a message of this order, as its list finds them, never any message by its id
+        (plans/Security-Review-Medium.md SEC-MAIL-64) -->
+    <transition name="sendEmailMessage"><parameter name="emailMessageId"/><actions>
+        <set field="recordEmailMessage" from="null"/>
+        <if condition="emailMessageId &amp;&amp; orderId">
+            <entity-find-one entity-name="mantle.order.OrderEmailMessage" value-field="recordEmailMessage">
+                <field-map field-name="orderId"/><field-map field-name="emailMessageId"/></entity-find-one></if>
+        <if condition="recordEmailMessage == null">
+            <message error="true">Email message ${emailMessageId ?? ''} not found for this order</message><return/></if>
+        <service-call name="org.moqui.mail.EmailServices.send#EmailMessage" in-map="{emailMessageId:emailMessageId}"/>
+    </actions><default-response url="."/></transition>
 
     <transition name="recalcOrderPartItemAmounts"><service-call name="mantle.order.OrderServices.recalc#OrderPartItemAmounts"/>
         <default-response url="."/></transition>
@@ -153,9 +162,24 @@ along with this software (see the LICENSE.md file). If not, see
         </script>
     </actions><default-response type="none"/></transition>
 
+    <!-- One message of this order's, as its list finds them, never any message by its id (any message's body, a
+        password reset's included, was readable). Its HTML is mail, not cleaned, so it is sent sandboxed: no script, no
+        origin of the application's (plans/Security-Review.md SEC-MAIL-63, as Party > Emails). -->
     <transition name="EmailMessage" read-only="true"><parameter name="emailMessageId"/><actions>
-        <entity-find-one entity-name="moqui.basic.email.EmailMessage" value-field="emailMessage"/>
-        <script>ec.web.sendTextResponse(emailMessage?.body, "text/html", null)</script>
+        <set field="recordEmailMessage" from="null"/>
+        <if condition="emailMessageId &amp;&amp; orderId">
+            <entity-find-one entity-name="mantle.order.OrderEmailMessage" value-field="recordEmailMessage">
+                <field-map field-name="orderId"/><field-map field-name="emailMessageId"/></entity-find-one></if>
+        <set field="emailMessage" from="null"/>
+        <if condition="recordEmailMessage != null">
+            <entity-find-one entity-name="moqui.basic.email.EmailMessage" value-field="emailMessage"/></if>
+        <if condition="emailMessage == null">
+            <message error="true">Email message ${emailMessageId ?? ''} not found for this order</message><return/></if>
+        <script>
+            ec.web.response.setHeader("Content-Security-Policy", "sandbox; default-src 'none'; img-src data: https:; style-src 'unsafe-inline'")
+            ec.web.response.setHeader("X-Content-Type-Options", "nosniff")
+            ec.web.sendTextResponse(emailMessage.body, "text/html", null)
+        </script>
     </actions><default-response type="none"/></transition>
     <transition name="PrintOrder.pdf">
         <default-response url="${ec.web.getWebappRootUrl(false, null)}/fop/apps/${appRoot}/Order/PrintOrder" url-type="plain">

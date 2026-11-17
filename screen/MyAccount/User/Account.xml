@@ -28,8 +28,12 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="createUserAuthcFactorTotp"><service-call name="org.moqui.impl.UserServices.create#UserAuthcFactorTotp"/>
         <default-response url="."/></transition>
-    <transition name="verifyUserAuthcFactorTotp"><service-call name="org.moqui.impl.UserServices.verify#UserAuthcFactorTotp"/>
-        <default-response url="."/></transition>
+    <!-- the framework's check of a code against the user's own factors, which marks an authenticator verified (the Verify
+        dialog's VerifyTotp of the tools app does the same); there is no verify#UserAuthcFactorTotp -->
+    <transition name="verifyUserAuthcFactorTotp">
+        <service-call name="org.moqui.impl.UserServices.validate#UserAuthcFactorCode" in-map="{userId:userId, code:code}" out-map="context"/>
+        <actions><if condition="!verified"><message error="true">Authentication code is not valid</message></if></actions>
+        <default-response url="."/><error-response url="."/></transition>
     <transition name="createUserAuthcFactorSingleUse">
         <service-call name="org.moqui.impl.UserServices.create#SingleUseAuthcCodes"/>
         <actions><!-- session attributes are text: keep the list as JSON -->
