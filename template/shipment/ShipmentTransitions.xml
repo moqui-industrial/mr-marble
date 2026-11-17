@@ -58,13 +58,15 @@ along with this software (see the LICENSE.md file). If not, see
             <if condition="retLabel == 'true'"><then>
                 <if condition="intlInvoiceLabel == 'true'"><then>
                     <if condition="sprs?.returnIntlInvoiceUrl"><then>
-                        <script>ec.web.sendResourceResponse(sprs.returnIntlInvoiceUrl)</script>
+                        <script>{ const refusal = ec.service.sync().name('mantle.account.GatewayConnectionServices.check#LabelUrl').parameter('url', String(sprs.returnIntlInvoiceUrl)).call()?.refusal
+                            if (refusal) ec.web.sendError(403, refusal, null); else ec.web.sendResourceResponse(sprs.returnIntlInvoiceUrl) }</script>
                     </then><else>
                         <script>ec.web.sendError(404, 'No returnIntlInvoiceUrl', null)</script>
                     </else></if>
                 </then><else>
                     <if condition="sprs?.returnLabelUrl"><then>
-                        <script>ec.web.sendResourceResponse(sprs.returnLabelUrl)</script>
+                        <script>{ const refusal = ec.service.sync().name('mantle.account.GatewayConnectionServices.check#LabelUrl').parameter('url', String(sprs.returnLabelUrl)).call()?.refusal
+                            if (refusal) ec.web.sendError(403, refusal, null); else ec.web.sendResourceResponse(sprs.returnLabelUrl) }</script>
                     </then><else-if condition="sprs?.returnLabelImage">
                         <script>ec.web.sendBytesResponse(sprs.returnLabelImage, null, true)</script>
                     </else-if><else>
@@ -74,7 +76,8 @@ along with this software (see the LICENSE.md file). If not, see
             </then><else>
                 <if condition="intlInvoiceLabel == 'true'"><then>
                     <if condition="sprs?.internationalInvoiceUrl"><then>
-                        <script>ec.web.sendResourceResponse(sprs.internationalInvoiceUrl)</script>
+                        <script>{ const refusal = ec.service.sync().name('mantle.account.GatewayConnectionServices.check#LabelUrl').parameter('url', String(sprs.internationalInvoiceUrl)).call()?.refusal
+                            if (refusal) ec.web.sendError(403, refusal, null); else ec.web.sendResourceResponse(sprs.internationalInvoiceUrl) }</script>
                     </then><else-if condition="sprs?.internationalInvoice">
                         <script>ec.web.sendBytesResponse(sprs.internationalInvoice, null, true)</script>
                     </else-if><else>
@@ -82,7 +85,8 @@ along with this software (see the LICENSE.md file). If not, see
                     </else></if>
                 </then><else>
                     <if condition="sprs?.labelUrl"><then>
-                        <script>ec.web.sendResourceResponse(sprs.labelUrl)</script>
+                        <script>{ const refusal = ec.service.sync().name('mantle.account.GatewayConnectionServices.check#LabelUrl').parameter('url', String(sprs.labelUrl)).call()?.refusal
+                            if (refusal) ec.web.sendError(403, refusal, null); else ec.web.sendResourceResponse(sprs.labelUrl) }</script>
                     </then><else-if condition="sprs?.labelImage">
                         <script>ec.web.sendBytesResponse(sprs.labelImage, null, true)</script>
                     </else-if><else>
