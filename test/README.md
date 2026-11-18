@@ -55,7 +55,7 @@ CSRF enforcement, every browser interaction or physical printing.
 ## Client specs
 
 `test/client/` holds specs that run outside the server against a running one, in headless Chromium
-(`docs/dev/Client-Testing.md` in MR Moqui). `--serve` starts the server `test/client/suite.js` declares, runs the specs
+(`docs/dev/JS-Test-Client.md` in MR Moqui). `--serve` starts the server `test/client/suite.js` declares, runs the specs
 and stops it:
 
 ```sh
