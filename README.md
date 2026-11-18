@@ -27,7 +27,8 @@ To make sure this component loads before yours, add a dependency in your compone
 
 ```sh
 ./moq component-get mr-marble
-./moq test mr-mantle mr-marble     # the regression suite, while working and before a commit
+./moq test mr-mantle mr-marble     # the regression suite, while working
+./moq test-apps                    # every app component's regression suite, before a commit
 ./moq accept mr-mantle mr-marble   # the acceptance suite (the screen sweeps), when asked
 ```
 
