@@ -2,5 +2,4 @@
 <component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-3.xsd"
         name="mr-marble" version="0.1.0">
     <depends-on name="mr-mantle" version="0.1.0"/>
-    <!-- can run without this, though PDFs will not render: <depends-on name="moqui-fop"/> -->
 </component>
