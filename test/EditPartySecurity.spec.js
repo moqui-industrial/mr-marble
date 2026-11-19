@@ -45,10 +45,31 @@ function post(username, transition, parameters) {
     }
 }
 
+// a transition of Marble's Edit Party posted as the user with artifact authorization on, the user given Marble's root and
+// Party screens (marble.xml)
+function postAuthorized(username, transition, parameters) {
+    login(username)
+    const wasDisabled = ec.artifactExecution.authzDisabled()
+    ec.artifactExecution.enableAuthz()
+    try {
+        const out = ec.screen.makeTest().rootScreen("component://mr-marble/screen/marble.xml").render("Party/EditParty/" + transition, parameters, "post")
+        const errors = Array.from(out.errorMessages || []).join(" | ") + (ec.message.hasError() ? ec.message.getErrorsString() : "")
+        ec.message.clearErrors()
+        return {status: out.status, errors}
+    } finally {
+        if (wasDisabled) ec.artifactExecution.disableAuthz()
+        login("john.doe")
+    }
+}
+const account = userId => sys(() => ec.entity.find("moqui.security.UserAccount").condition("userId", userId).useCache(false).one())
+
 spec({
     setupSpec() {
         login("john.doe")
         makeUser(PLAIN, [])
+        for (const artifactGroupId of ["MarbleErpApp", "SimpleScreensParty"])
+            make("moqui.security.ArtifactAuthz", {artifactAuthzId: PLAIN + "_" + artifactGroupId, userGroupId: PLAIN, artifactGroupId,
+                authzTypeEnumId: "AUTHZT_ALLOW", authzActionEnumId: "AUTHZA_ALL"})
         makeUser(AR, ["RECEIVABLE_EDIT"])
         make("mantle.party.Party", {partyId: PARTY, partyTypeEnumId: "PtyPerson"})
         make("mantle.party.Person", {partyId: PARTY, firstName: "Spec", lastName: "Employee"})
@@ -116,5 +137,27 @@ feature("Edit Party's group membership goes through Admin's access rules: a user
         own.includes("ADMIN_ACCESS_MANAGE")
         other.includes("ADMIN_ACCESS_MANAGE")
         members == 0
+    }
+})
+
+// an account's enabling and disabling is an account administrator's: a Party screen user's post, with authorization on,
+// leaves it as it was (SEC-ADM-89; the framework's UserServices ask ADMIN_IDENTITY_MANAGE too once mr-moqui 8c4177a9f is merged)
+feature("a new account's group goes through Admin's access rules; an access administrator adds a user to MarbleErpAdmin (SEC-ADM-91)", {
+    when() {
+        make("mantle.party.Party", {partyId: "SPEC_EPS_NEW", partyTypeEnumId: "PtyPerson"})
+        make("mantle.party.Person", {partyId: "SPEC_EPS_NEW", firstName: "Spec", lastName: "New"})
+        const madeByPlain = postAuthorized(PLAIN.toLowerCase(), "createUserAccount", {partyId: "SPEC_EPS_NEW", username: "spec.eps.new",
+            emailAddress: "spec.eps.new@example.com", newPassword: "Spec-eps-pass-9!", newPasswordVerify: "Spec-eps-pass-9!",
+            userGroupId: "MarbleErpAdmin"})
+        const newAccounts = sys(() => ec.entity.find("moqui.security.UserAccount").condition("username", "spec.eps.new").count())
+        const added = post("john.doe", "createUserGroupMember", {partyId: PARTY, userId: PARTY, userGroupId: "MarbleErpAdmin"})
+        const members = sys(() => ec.entity.find("moqui.security.UserGroupMember")
+            .condition({userGroupId: "MarbleErpAdmin", userId: PARTY}).count())
+        return {madeByPlain, newAccounts, added, members}
+    },
+    then({madeByPlain, newAccounts, added, members}) {
+        newAccounts == 0
+        added == ""
+        members == 1
     }
 })
