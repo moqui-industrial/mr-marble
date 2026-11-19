@@ -46,7 +46,7 @@ feature("New by Location refuses a row of any type outside its record's folder; 
         const image = post({productContentTypeEnumId: "PcntImageSmall", contentLocation: "https://images.example.com/spec.png"})
         const category = render(
             "apps/marble/Catalog/Category/Content/ContentList/createContentWithLocation",
-            {productCategoryId: CATEGORY, categoryContentTypeEnumId: "PcctImageUrl", contentLocation: outside},
+            {productCategoryId: CATEGORY, categoryContentTypeEnumId: "PcctDescription", contentLocation: outside},
             "post"
         )
         // a row written outside the folder before the rule, and a component's image as the demo data has one
