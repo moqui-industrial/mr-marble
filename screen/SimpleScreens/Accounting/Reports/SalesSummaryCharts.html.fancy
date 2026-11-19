@@ -15,18 +15,18 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <#assign countSummaryConfig = JSON.stringify({ type:'line', data:{labels:orderLabelList,
 datasets:countSummaryDatasets },
-options:{ scales:{ yAxes:[{ position:'left', id:'leftSide', ticks:{beginAtZero:true} },
-    { position:'right', id:'rightSide', ticks:{beginAtZero:true}, gridLines:{drawOnChartArea:false} }] }, maintainAspectRatio:false } }).replace(/</g, "\\u003c")>
+options:{ scales:{ leftSide:{ position:'left', beginAtZero:true },
+    rightSide:{ position:'right', beginAtZero:true, grid:{drawOnChartArea:false} } }, maintainAspectRatio:false } }).replace(/</g, "\\u003c")>
 <#assign orderAmountConfig = JSON.stringify({ type:'line', data:{labels:orderLabelList,
 datasets:orderAmountsDatasets },
-options:{ scales:{ yAxes:[{ position:'left', id:'leftSide', ticks:{beginAtZero:true} },
-    { position:'right', id:'rightSide', ticks:{beginAtZero:true}, gridLines:{drawOnChartArea:false} }] }, maintainAspectRatio:false } }).replace(/</g, "\\u003c")>
+options:{ scales:{ leftSide:{ position:'left', beginAtZero:true },
+    rightSide:{ position:'right', beginAtZero:true, grid:{drawOnChartArea:false} } }, maintainAspectRatio:false } }).replace(/</g, "\\u003c")>
 <#assign invoiceMarginConfig = JSON.stringify({ type:'bar', data:{labels:invoiceLabelList,
 datasets:invoiceMarginDatasets },
-options:{ scales:{ yAxes:[{ ticks:{beginAtZero:true} }] }, maintainAspectRatio:false } }).replace(/</g, "\\u003c")>
+options:{ scales:{ y:{ beginAtZero:true } }, maintainAspectRatio:false } }).replace(/</g, "\\u003c")>
 <#assign discountCostConfig = JSON.stringify({ type:'line', data:{labels:invoiceLabelList,
 datasets:discountCostDatasets },
-options:{ scales:{ yAxes:[{ ticks:{beginAtZero:true} }] }, maintainAspectRatio:false } }).replace(/</g, "\\u003c")>
+options:{ scales:{ y:{ beginAtZero:true } }, maintainAspectRatio:false } }).replace(/</g, "\\u003c")>
 <#if sri.getRenderMode() == "vuet" || sri.getRenderMode() == "html">
 <div class="row"><div class="${statsChartColStyle}">
     <div class="chart-container" style="position:relative; height:300px; width:100%;"><canvas id="CountSummaryChart"></canvas></div>

@@ -32,7 +32,7 @@
         </div>
     </div></div>
     <#if chartList?.length>
-        <#assign chartConfig = JSON.stringify({type:'line', data:{labels:labelList ?? [], datasets:[{backgroundColor:'rgba(49, 112, 143, 0.9)', borderColor:'rgba(49, 112, 143, 0.9)', fill:false, data:chartList}].concat((Number(maPeriods) > 0 && chartMaList?.length) ? [{backgroundColor:null, borderColor:'rgba(240, 173, 78, 0.5)', fill:false, data:chartMaList}] : [])}, options:{legend:{display:false}, scales:{xAxes:[{display:chartBig}]}, maintainAspectRatio:false}}).replace(/</g, "\\u003c")>
+        <#assign chartConfig = JSON.stringify({type:'line', data:{labels:labelList ?? [], datasets:[{backgroundColor:'rgba(49, 112, 143, 0.9)', borderColor:'rgba(49, 112, 143, 0.9)', fill:false, data:chartList}].concat((Number(maPeriods) > 0 && chartMaList?.length) ? [{backgroundColor:null, borderColor:'rgba(240, 173, 78, 0.5)', fill:false, data:chartMaList}] : [])}, options:{plugins:{legend:{display:false}}, scales:{x:{display:chartBig}}, maintainAspectRatio:false}}).replace(/</g, "\\u003c")>
         <#if sri.getRenderMode() == "vuet" || sri.getRenderMode() == "html">
             <div class="chart-container" style="position:relative; height:<#if chartBig>500px<#else>90px</#if>; width:100%;"><canvas id="${chartId}"></canvas></div>
             <script>var ${chartId} = new Chart(document.getElementById("${chartId}"), ${raw(chartConfig)});</script>
