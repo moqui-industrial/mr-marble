@@ -1,6 +1,7 @@
 // Marble's Edit Party screen (screen/SimpleScreens/Party/EditParty.xml, its sections included by EditCustomer and
-// EditSupplier): a party's identifications follow Accounting's rule, never a tax identification and whole values and changes
-// only for RECEIVABLE_EDIT or PAYABLE_EDIT (template/party/PartyIdentifications.js; plans/Security-Review.md SEC-BAP-140).
+// EditSupplier): a party's identifications are read and written through Accounting's services, never a tax identification,
+// every value masked, changes only by a receivables or payables editor of an organization the party is a customer or
+// supplier of (template/party/PartyIdentifications.js; plans/Security-Review.md SEC-BAP-140).
 // The account's sign-in form and its enable and disable links show only to ADMIN_IDENTITY_MANAGE (SEC-ADM-89). One html
 // render of Edit Party, by a user who holds none of these; the transitions posted as each user.
 // Run: ./moq test mr-marble --spec EditPartySecurity
@@ -71,19 +72,24 @@ spec({
             make("moqui.security.ArtifactAuthz", {artifactAuthzId: PLAIN + "_" + artifactGroupId, userGroupId: PLAIN, artifactGroupId,
                 authzTypeEnumId: "AUTHZT_ALLOW", authzActionEnumId: "AUTHZA_ALL"})
         makeUser(AR, ["RECEIVABLE_EDIT"])
+        // the receivables editor works for the retail organization, whose customer the party is (check#CustomerScope)
+        make("mantle.party.PartyRelationship", {relationshipTypeEnumId: "PrtAgent", fromPartyId: AR, toPartyId: "ORG_ZIZI_RETAIL",
+            toRoleTypeId: "OrgInternal", fromDate: 0})
         make("mantle.party.Party", {partyId: PARTY, partyTypeEnumId: "PtyPerson"})
         make("mantle.party.Person", {partyId: PARTY, firstName: "Spec", lastName: "Employee"})
         make("moqui.security.UserAccount", {userId: PARTY, username: "spec.eps.party", partyId: PARTY,
             emailAddress: "spec.eps.party@example.com"})
         make("mantle.party.PartyIdentification", {partyId: PARTY, partyIdTypeEnumId: "PtidSsn", idValue: SSN})
         make("mantle.party.PartyIdentification", {partyId: PARTY, partyIdTypeEnumId: "PtidPassport", idValue: PASSPORT})
+        make("mantle.party.PartyRelationship", {relationshipTypeEnumId: "PrtCustomer", fromPartyId: PARTY, toPartyId: "ORG_ZIZI_RETAIL",
+            fromDate: 0})
     },
     cleanup() {
         login("john.doe")
     }
 })
 
-feature("Edit Party shows identifications masked and no tax one; only a receivables editor reads them whole and changes them (SEC-BAP-140)", {
+feature("Edit Party shows identifications masked and no tax one; only a receivables editor of the party's organization changes them, through Accounting's services (SEC-BAP-140)", {
     when() {
         login(PLAIN.toLowerCase())
         const rendered = sys(() => ec.screen.makeTest().rootScreen(root).renderMode("html").render("Party/EditParty", {partyId: PARTY}, null))
@@ -114,7 +120,9 @@ feature("Edit Party shows identifications masked and no tax one; only a receivab
         plainChange.includes("PERMISSION_DENIED")
         plainSsn.idValue == SSN
         arList.map(row => row.partyIdTypeEnumId) == ["PtidPassport"]
-        arList[0].idValue == PASSPORT
+        // masked for every reader, an editor too: Accounting's read (CustomerFinance.js identifications)
+        arList[0].valueText == "•••• 5432"
+        !JSON.stringify(arList).includes(PASSPORT)
         arSsn.includes("IDENTIFICATION_TYPE_RESTRICTED")
         arMasked.includes("IDENTIFICATION_VALUE_MASKED")
         arChange == ""
@@ -171,5 +179,24 @@ feature("a new account's group goes through Admin's access rules; an access admi
         newAccounts == 0
         added == ""
         members == 1
+    }
+})
+
+// Find Duplicates' identification matches are masked and never by a tax identification (Mantle find#PartyDuplicates;
+// SEC-BAP-140 review)
+feature("a party's duplicates show an identification match masked and none by SSN (SEC-BAP-140)", {
+    when() {
+        make("mantle.party.Party", {partyId: "SPEC_EPS_TWIN", partyTypeEnumId: "PtyPerson"})
+        make("mantle.party.Person", {partyId: "SPEC_EPS_TWIN", firstName: "Spec", lastName: "Twin"})
+        make("mantle.party.PartyIdentification", {partyId: "SPEC_EPS_TWIN", partyIdTypeEnumId: "PtidSsn", idValue: SSN})
+        make("mantle.party.PartyIdentification", {partyId: "SPEC_EPS_TWIN", partyIdTypeEnumId: "PtidPassport",
+            idValue: identification("PtidPassport").idValue})
+        const found = sys(() => ec.service.sync().name("mantle.party.DuplicateServices.find#PartyDuplicates").parameters({partyId: PARTY}).call())
+        return {matches: Array.from(found.matchingInfoByPartyId?.SPEC_EPS_TWIN || []), passport: identification("PtidPassport").idValue}
+    },
+    then({matches, passport}) {
+        matches.some(row => row.matchType == "identification")
+        !JSON.stringify(matches).includes(SSN) && !JSON.stringify(matches).includes(passport)
+        !matches.some(row => row.partyIdTypeEnumId == "PtidSsn")
     }
 })

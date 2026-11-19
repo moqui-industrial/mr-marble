@@ -463,12 +463,12 @@ along with this software (see the LICENSE.md file). If not, see
                 </box-body-nopad></container-box>
             </widgets></section>
 
-            <!-- never a tax identification; whole values and changes for RECEIVABLE_EDIT or PAYABLE_EDIT only, masked otherwise
-                (template/party/PartyIdentifications.js, SEC-BAP-140) -->
+            <!-- never a tax identification, every value masked; changes by a receivables or payables editor of an organization the
+                party is a customer or supplier of, through Accounting's services (template/party/PartyIdentifications.js, SEC-BAP-140) -->
             <section name="PartyIdentificationSection"><actions>
                     <set field="identificationRule" from="ec.resource.script('component://mr-marble/template/party/PartyIdentifications.js')"/>
                     <set field="partyIdentificationList" from="identificationRule.list(partyId)"/>
-                    <set field="identificationEdit" from="identificationRule.canEdit()"/>
+                    <set field="identificationEdit" from="identificationRule.canEdit(partyId)"/>
                     <set field="partyIdTypeEnumIds" from="partyIdentificationList.map((row) =&gt; row.partyIdTypeEnumId).concat(Array.from(identificationRule.taxIdTypes))"/>
             </actions><widgets>
                 <container-box><box-header title="Identification"/><box-toolbar>
@@ -497,9 +497,10 @@ along with this software (see the LICENSE.md file). If not, see
                         <field name="partyIdTypeEnumId"><default-field title="ID Type">
                             <display-entity entity-name="moqui.basic.Enumeration"/>
                         </default-field></field>
+                        <field name="valueText"><default-field title="ID Value"><display/></default-field></field>
                         <field name="idValue">
-                            <conditional-field condition="identificationEdit"><text-line size="20"/></conditional-field>
-                            <default-field><display/></default-field></field>
+                            <conditional-field condition="identificationEdit" title="New Value"><text-line size="20"/></conditional-field>
+                            <default-field title=""><ignored/></default-field></field>
                         <field name="expireDate">
                             <conditional-field condition="identificationEdit"><date-time type="date"/></conditional-field>
                             <default-field><display/></default-field></field>
