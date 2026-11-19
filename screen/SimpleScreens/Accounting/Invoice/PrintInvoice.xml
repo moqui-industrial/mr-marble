@@ -19,6 +19,10 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="invoiceId" required="true"/>
 
     <actions>
+        <!-- the template is the screen's own, or the one an install sets for the store or the organization
+            (ProductStoreSetting, PartySetting), which the service answers; never a templateLocation of the request, which
+            would render any component file as a template (SEC-SCR-81) -->
+        <set field="templateLocation" from="null"/>
         <service-call name="mantle.account.InvoiceServices.get#InvoicePrintInfo" in-map="{invoiceId:invoiceId}" out-map="context"/>
 
         <if condition="!templateLocation">

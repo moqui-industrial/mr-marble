@@ -18,6 +18,10 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="orderId" required="true"/>
 
     <actions>
+        <!-- the template is the screen's own, or the one an install sets for the store or the organization
+            (ProductStoreSetting, PartySetting), which the service answers; never a templateLocation of the request, which
+            would render any component file as a template (SEC-SCR-81) -->
+        <set field="templateLocation" from="null"/>
         <service-call name="mantle.order.OrderInfoServices.get#OrderDisplayInfo" in-map="{orderId:orderId}" out-map="context"/>
 
         <if condition="!templateLocation">

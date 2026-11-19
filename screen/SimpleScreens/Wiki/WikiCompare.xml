@@ -22,15 +22,23 @@ along with this software (see the LICENSE.md file). If not, see
 
     <actions>
         <!-- <set field="extraPathNameList" from="sri.screenUrlInfo.extraPathNameList"/> -->
-        <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
-        <set field="wikiType" from="wikiType || 'md'"/>
+        <!-- the page's info in a map of its own, never the context, so no name of the request (pageReference) stands for
+            the page's (SEC-SCR-81) -->
+        <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" out-map="pageInfo"
+                in-map="{wikiSpaceId:wikiSpaceId, pagePath:pagePath}"/>
+        <set field="diffHtml" from="''"/>
+        <set field="diffUnified" from="''"/>
+        <set field="diffStats" from="null"/>
+        <set field="pageName" from="null"/>
+        <!-- no such space, or a page the user may not view: nothing of it is read -->
+        <if condition="ec.message.hasError()"><return/></if>
+        <set field="pageName" from="pageInfo.pageName"/>
+        <set field="wikiType" from="pageInfo.wikiType || 'md'"/>
         <!-- the line diff is made on the server (ResourceReference.getVersionDiff): an HTML table with every text escaped;
             the Java screen diffed characters in the browser with jsdiff from a CDN -->
         <script><![CDATA[
-            diffHtml = ''
-            diffUnified = ''
             try {
-                const diff = pageReference?.getVersionDiff(versionNameLhs, versionNameRhs)
+                const diff = pageInfo.pageReference?.getVersionDiff(versionNameLhs, versionNameRhs)
                 if (diff) {
                     diffHtml = diff.html
                     diffUnified = diff.unifiedDiff
