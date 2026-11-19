@@ -43,6 +43,8 @@ along with this software (see the LICENSE.md file). If not, see
                 <field name="productStoreId"><default-field><hidden/></default-field></field>
                 <field name="storePromotionId"><default-field><hidden/></default-field></field>
                 <field name="promoCode"><default-field title="Code"><text-line size="30"/></default-field></field>
+                <!-- a code made here is one customers enter, as Mantle's own create makes it; Edit Promo Code changes it -->
+                <field name="userEntered"><default-field><hidden default-value="Y"/></default-field></field>
                 <field name="fromDate"><default-field><date-time/></default-field></field>
                 <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
             </form-single>
