@@ -342,7 +342,9 @@ along with this software (see the LICENSE.md file). If not, see
                         if (hlFieldDisplay.includes('.')) hlFieldDisplay = hlFieldDisplay.substring(hlFieldDisplay.lastIndexOf('.') + 1)
                         hlFieldDisplay = StringUtilities.camelCaseToPretty(hlFieldDisplay)
                         hlListDisplay = hlList.map(it => '"' + WebUtilities.encodeHtml(it.toString().replaceAll('<em>', '__EMO_').replaceAll('</em>', '__EMC_'))
-                                .replaceAll('__EMO_', '<strong>').replaceAll('__EMC_', '</strong>') + '"')
+                                .replaceAll('__EMO_', '<strong>').replaceAll('__EMC_', '</strong>')
+                                // a stored value is not a Vue template either: its braces as entities, so {{ }} in it is text
+                                .replaceAll('{', '&#123;').replaceAll('}', '&#125;') + '"')
                     ]]></script>
                 </actions><widgets>
                     <label text="${hlFieldDisplay}: ${hlListDisplay.join(', ')}" type="div" encode="false"/>

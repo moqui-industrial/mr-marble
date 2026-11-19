@@ -17,19 +17,61 @@ along with this software (see the LICENSE.md file). If not, see
 
     <parameter name="wikiSpaceId" required="true"/>
 
-    <transition name="updateSpace"><service-call name="update#moqui.resource.wiki.WikiSpace" in-map="context"/>
-        <default-response url="."/></transition>
+    <!-- the entity-auto update checks nothing: a space's settings are changed by its administrators (get#WikiPageAccess
+        canAdmin), and only the fields of the form, never a script, decorator or root setting of the request (SEC-SCR-81;
+        Wiki.eecas.xml checks who may set allowAnyHtml) -->
+    <transition name="updateSpace">
+        <actions>
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiSpaceId:wikiSpaceId}" out-map="spaceAccess"/>
+            <if condition="!spaceAccess.canAdmin"><return error="true" message="Only an administrator of space ${wikiSpaceId} changes its settings"/></if>
+            <service-call name="update#moqui.resource.wiki.WikiSpace" in-map="{wikiSpaceId:wikiSpaceId, description:description,
+                    publicPageUrl:publicPageUrl, publicAttachmentUrl:publicAttachmentUrl, publicBlogUrl:publicBlogUrl,
+                    restrictView:restrictView, restrictUpdate:restrictUpdate, allowAnyHtml:allowAnyHtml}"/>
+        </actions>
+        <default-response url="."/><error-response url="."/></transition>
+    <!-- the pages of a space the user may change go to the search index (get#WikiPageAccess canUpdate) -->
     <transition name="indexPages">
-        <service-call name="org.moqui.search.SearchServices.index#WikiSpacePages"
-                      in-map="Object.assign({}, context, {dataDocumentId:'MantleWikiPage'})"/>
+        <actions>
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiSpaceId:wikiSpaceId}" out-map="spaceAccess"/>
+            <if condition="!spaceAccess?.canUpdate"><return error="true" message="Only a user who may change space ${wikiSpaceId} indexes its pages"/></if>
+            <service-call name="org.moqui.search.SearchServices.index#WikiSpacePages"
+                    in-map="{wikiSpaceId:wikiSpaceId, dataDocumentId:'MantleWikiPage'}"/>
+        </actions>
         <default-response url="."/>
     </transition>
     <transition name="cloneWikiSpace" begin-transaction="false">
-        <service-call name="org.moqui.resource.WikiServices.clone#WikiSpace"/>
-        <default-response url="."/>
+        <actions>
+            <!-- a script page (.fancy) runs on the server for whoever views it, so only a holder of DATABASE_ADMIN copies one
+                (clone#WikiSpace refuses it, SEC-SCR-81): say so, naming the pages, before any of the copy is made -->
+            <!-- a space the user may view, before anything of it is read -->
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiSpaceId:baseWikiSpaceId}" out-map="baseAccess"/>
+            <if condition="!baseAccess?.canView"><return error="true" message="Space not found"/></if>
+            <script><![CDATA[
+                const types = ec.service.sync().name('org.moqui.resource.WikiServices.get#WikiPageTypes').call()
+                const base = types.scriptTypes ? null : ec.entity.find('moqui.resource.wiki.WikiSpace').condition('wikiSpaceId', baseWikiSpaceId).one()
+                const scriptPages = []
+                if (base?.rootPageLocation) {
+                    const rootRef = ec.resource.getLocationReference(base.rootPageLocation)
+                    if (/\.fancy$/i.test(String(base.rootPageLocation))) scriptPages.push(rootRef.fileName || base.rootPageLocation)
+                    const dirRef = rootRef.findMatchingDirectory()
+                    const files = []
+                    if (dirRef?.exists) dirRef.walkChildTree(files, null)
+                    for (const file of files) if (/\.fancy$/i.test(String(file.location || file.name || ''))) scriptPages.push(file.path || file.name)
+                }
+                if (scriptPages.length) ec.message.addError(ec.resource.expand(ec.l10n.localize('Space ${baseWikiSpaceId} has script pages (${pageNames}), which run on the server for whoever views them: only a holder of the DATABASE_ADMIN permission copies them. Ask a database administrator to clone this space, or remove those pages first.'),
+                        '', {baseWikiSpaceId, pageNames: scriptPages.slice(0, 5).join(', ') + (scriptPages.length > 5 ? ', ...' : '')}, false))
+            ]]></script>
+            <if condition="ec.message.hasError()"><return/></if>
+            <service-call name="org.moqui.resource.WikiServices.clone#WikiSpace" in-map="context"/>
+        </actions>
+        <default-response url="."/><error-response url="."/>
     </transition>
 
     <actions>
+        <!-- the settings of a space the user may view (get#WikiPageAccess); changing them needs canAdmin (updateSpace) -->
+        <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiSpaceId:wikiSpaceId}" out-map="spaceAccess"/>
+        <set field="wikiSpace" from="null"/>
+        <if condition="ec.message.hasError() || !spaceAccess?.canView"><return error="true" message="Space not found"/></if>
         <entity-find-one entity-name="moqui.resource.wiki.WikiSpace" value-field="wikiSpace"/>
     </actions>
     <widgets>
@@ -42,17 +84,19 @@ along with this software (see the LICENSE.md file). If not, see
                     <display/></default-field></field>
                 <field name="wikiSpaceId"><default-field title="New Space ID">
                     <text-line size="8" maxlength="8"/></default-field></field>
-                <field name="description" from="wikiSpace.description"><default-field>
+                <field name="description" from="wikiSpace?.description"><default-field>
                     <text-line size="40"/></default-field></field>
 
+                <!-- a space's own place in the database for anyone; another directory or location takes pages from wherever it
+                    names, so only a system administrator gives one (Wiki.eecas.xml) -->
                 <field name="rootPageDirectory"><default-field>
                     <drop-down combo-box="true">
-                        <option key="dbresource://WikiSpace"/>
-                        <option key="WikiSpace" text="runtime/WikiSpace"/>
-                        <option key="content://main/WikiSpace"/>
+                        <option key="dbresource://WikiSpace" text="Database (dbresource://WikiSpace)"/>
+                        <option key="WikiSpace" text="runtime/WikiSpace (system administrators only)"/>
+                        <option key="content://main/WikiSpace" text="content://main/WikiSpace (system administrators only)"/>
                     </drop-down>
                 </default-field></field>
-                <field name="rootPageLocation"><default-field title="Root Page Override" tooltip="Select a root page directory unless you know what you're doing and really need this, should end in filename with extension based on wiki type like .md">
+                <field name="rootPageLocation"><default-field title="Root Page Override" tooltip="System administrators only. Select a root page directory unless you know what you're doing and really need this, should end in filename with extension based on wiki type like .md">
                     <text-line size="60"/>
                 </default-field></field>
 
@@ -84,7 +128,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <option key="N"/><option key="Y"/></drop-down></default-field></field>
             <field name="restrictUpdate"><default-field><drop-down no-current-selected-key="N">
                 <option key="N"/><option key="Y"/></drop-down></default-field></field>
-            <field name="allowAnyHtml"><default-field title="Allow Any HTML"><drop-down no-current-selected-key="N">
+            <field name="allowAnyHtml"><default-field title="Allow Any HTML" tooltip="Y only for a system administrator"><drop-down no-current-selected-key="N">
                 <option key="N"/><option key="Y"/></drop-down></default-field></field>
 
             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>

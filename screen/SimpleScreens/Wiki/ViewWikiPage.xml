@@ -23,20 +23,24 @@ along with this software (see the LICENSE.md file). If not, see
     <actions>
         <set field="extraPathNameList" from="sri.getScreenUrlInfo().extraPathNameList"/>
         <!-- <log level="warn" message="wiki pre-actions extraPathNameList ${extraPathNameList}"/> -->
-        <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
+        <!-- the page's info in a map of its own, never the context, so no name of the request (pageLocation, pageReference,
+            wikiSpace) stands for the page's (SEC-SCR-81) -->
+        <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" out-map="pageInfo"
+                in-map="{wikiSpaceId:wikiSpaceId, pagePath:pagePath, wikiPageId:wikiPageId, versionName:versionName, extraPathNameList:extraPathNameList}"/>
+        <set field="wikiSpace" from="null"/>
+        <set field="rendered" from="null"/>
+        <!-- no such space, or a page the user may not view: nothing of it is read -->
+        <if condition="ec.message.hasError()"><return/></if>
+        <set field="wikiSpace" from="pageInfo.wikiSpace"/>
 
+        <!-- the page as HTML to show, by its space and path, the renderer chosen by its type and the space, never a location
+            rendered as a template (SEC-SCR-81); a markdown page's relative links resolve against this screen's path -->
         <set field="basePath" from="sri.getCurrentScreenUrl().getScreenOnlyPath()"/>
-        <set field="baseLinkPath" from="basePath + '/' + wikiSpaceId"/>
-        <set field="baseLinkUrl" from="sri.getCurrentScreenUrl().getScreenPathUrl() + '/' + wikiSpaceId"/>
-        <script><![CDATA[
-            tuiPageText = ''
-            try {
-                if (pageReference) {
-                    tuiPageText = (versionName && currentVersionName != versionName ? pageReference.getText(versionName) : pageReference.getText()) || ''
-                    if (wikiType && wikiType.startsWith('html')) tuiPageText = tuiPageText.replace(/<[^>]*>/g, '')
-                }
-            } catch (err) { ec.logger.warn(`Could not read the text of wiki page ${pageLocation}: ${err.message}`) }
-        ]]></script>
+        <set field="baseLinkPath" from="basePath + '/' + pageInfo.wikiSpaceId"/>
+        <if condition="!wikiSpace?.decoratorScreenLocation">
+            <service-call name="org.moqui.resource.WikiServices.render#WikiPage" out-map="rendered"
+                    in-map="{wikiSpaceId:pageInfo.wikiSpaceId, pagePath:pageInfo.pagePath || '', versionName:pageInfo.versionName, baseLinkUrl:baseLinkPath}"/>
+        </if>
         <!-- this is only used for the WikiPageTree.ftl file, not needed otherwise: -->
         <!-- <service-call name="org.moqui.resource.WikiServices.get#WikiSpacePages" in-map="context" out-map="context"/> -->
     </actions>
@@ -46,13 +50,14 @@ along with this software (see the LICENSE.md file). If not, see
         <container><!-- NOTE: for this view/print screen don't use id=wiki-page-area to avoid horizontal scroll bar, which gets printed -->
             <section name="WikiPageInclude">
                 <condition><expression>!wikiSpace?.decoratorScreenLocation</expression></condition>
-                <actions><script>sri.baseLinkUrl(baseLinkUrl)</script></actions>
-                <widgets><render-mode><text type="html,vuet,qvt" template="true"
-                        location="${pageLocation||''}${versionName &amp;&amp; currentVersionName != versionName ? '#' + versionName.substring(0, 12) : ''}"/>
-                    <text type="tui"><![CDATA[${JSON.stringify(wikiType == 'md' ? {t: 'markdown', id: 'WikiPageText', text: tuiPageText || ''} : {t: 'text', style: 'pre', text: tuiPageText || ''})}]]></text></render-mode></widgets>
+                <!-- render#WikiPage's HTML, written with no template expansion; v-pre: the page is not a Vue template, so a
+                    {{ }} in it stays text. The terminal gets a markdown page's own text, any other page's HTML as terminal text -->
+                <widgets><render-mode><text type="html,vuet,qvt"><![CDATA[<div v-pre>${rendered?.pageHtml || ''}</div>]]></text>
+                    <text type="tui"><![CDATA[${JSON.stringify(rendered?.renderedAs == 'markdown' ?
+                        {t: 'markdown', id: 'WikiPageText', text: String(rendered.pageText || '')} :
+                        Object.assign({t: 'html', id: 'WikiPageText'}, JSON.parse(sri.htmlText(String(rendered?.pageHtml || '')))))}]]></text></render-mode></widgets>
                 <fail-widgets><include-screen location="${wikiSpace.decoratorScreenLocation}"/></fail-widgets>
             </section>
-            <section name="ResetBaseLink"><actions><script>sri.baseLinkUrl(null)</script></actions><widgets/></section>
         </container>
         <!-- CONSIDER: figure out a way to make configured space root screen (wikiSpace.decoratorScreenLocation) a subscreen
                instead of including it explicitly as above

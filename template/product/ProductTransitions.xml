@@ -22,12 +22,14 @@ along with this software (see the LICENSE.md file). If not, see
         <parameter name="productCategoryIds"/>
         <parameter name="assetTypeEnumId"/>
         <parameter name="assetClassEnumId"/>
-        <parameter name="indexName"/>
-        <parameter name="documentType"/>
         <parameter name="pageIndex"/>
         <actions>
-            <set field="indexName" from="indexName || searchIndexName || 'mantle'"/>
-            <set field="documentType" from="documentType || searchProductDocType || 'MantleProduct'"/>
+            <!-- the app's product document, never a request's (SEC-DAT-81): a document of products, else MantleProduct -->
+            <set field="indexName" from="searchIndexName || 'mantle'"/>
+            <set field="documentType" from="searchProductDocType || 'MantleProduct'"/>
+            <entity-find-one entity-name="moqui.entity.document.DataDocument" value-field="productDocument" cache="true">
+                <field-map field-name="dataDocumentId" from="documentType"/></entity-find-one>
+            <if condition="productDocument?.primaryEntityName != 'mantle.product.Product'"><set field="documentType" value="MantleProduct"/></if>
             <!-- <log message="====== getProductList indexName=${indexName}, documentType=${documentType}, term=${term}"/> -->
 
             <set field="outList" from="[]"/>
@@ -58,11 +60,11 @@ along with this software (see the LICENSE.md file). If not, see
                 if (productClassEnumId) termSb += ' AND productClassEnumId:' + productClassEnumId
                 if (assetTypeEnumId) termSb += ' AND assetTypeEnumId:' + assetTypeEnumId
                 if (assetClassEnumId) termSb += ' AND assetClassEnumId:' + assetClassEnumId
-                if (entityFilterSetId === 'MANTLE_USER_ORG') {
-                    termSb += ' AND ownerPartyId:(' + filterOrgIds.join(' OR ') + ')'
-                } else if (entityFilterSetId === 'MANTLE_ACTIVE_ORG' && activeOrgId) {
-                    termSb += ' AND ownerPartyId:(' + activeOrgId + ' OR _NA_)'
-                }
+                // the organization limit is a trusted filter, not query text a term could close and widen (SEC-DAT-81)
+                let ownerPartyIds = null
+                if (entityFilterSetId === 'MANTLE_USER_ORG') ownerPartyIds = (filterOrgIds || []).slice()
+                else if (entityFilterSetId === 'MANTLE_ACTIVE_ORG' && activeOrgId) ownerPartyIds = [activeOrgId, '_NA_']
+                searchFilter = ownerPartyIds ? {field: {name: 'ownerPartyId', op: 'in', values: ownerPartyIds.length ? ownerPartyIds : ['_NONE_']}} : null
             ]]></script>
             <!-- <log level="warn" message="Doing product search with queryString [${termSb.toString()}], indexName:${indexName}, documentType:${documentType}"/> -->
             <!--
@@ -78,7 +80,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <set field="orderByFields" from="term ? null : ['pseudoId']"/>
             -->
             <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context" ignore-error="true"
-                    in-map="{queryString:termSb.toString(), indexName:indexName, documentType:documentType,
+                    in-map="{queryString:termSb.toString(), indexName:indexName, documentType:documentType, filter:searchFilter,
                         orderByFields:orderByFields, pageIndex:pageIndex, pageSize:(pageSize||20)}"/>
             <!-- <log level="warn" message="Got product search results: ${documentList}"/> -->
             <script>

@@ -16,19 +16,34 @@ along with this software (see the LICENSE.md file). If not, see
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
         default-menu-title="Time" default-menu-index="5">
 
+    <!-- The user's own time: the party is the user's for the page, EditTimeEntry and each transition, never a posted
+        partyId (MyAccount.xml's pre-actions do not run for a transition), and a time entry named is one of the user's
+        (plans/Security-Review.md SEC-RTE-81) -->
+    <always-actions>
+        <set field="partyId" from="ec.user.userAccount?.partyId"/>
+        <if condition="!partyId"><script>throw new Error('Your account has no party to record time for')</script></if>
+        <if condition="timeEntryId">
+            <entity-find-one entity-name="mantle.work.time.TimeEntry" value-field="ownTimeEntry">
+                <field-map field-name="timeEntryId"/></entity-find-one>
+            <if condition="ownTimeEntry != null &amp;&amp; ownTimeEntry.partyId != partyId">
+                <script>throw new Error(`Time entry ${timeEntryId} is not yours`)</script></if>
+        </if>
+    </always-actions>
+
     <transition name="taskDetail"><default-response url="../Task/TaskDetail"/></transition>
 
-    <!-- TODO: add new service for this screen that is more limited, ie can't specify rates/etc -->
+    <!-- the list's fields for the user's own entry; rates are not set here -->
     <transition name="recordTimeEntry">
-        <actions>
-            <entity-find-one entity-name="mantle.work.time.TimeEntry" value-field="timeEntry"/>
-            <if condition="timeEntry != null &amp;&amp; timeEntry.partyId != ec.user.userAccount?.partyId">
-                <return error="true" message="You may only update your own time entries, Time Entry ${timeEntryId} owned by different party"/></if>
-            <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
-        </actions>
+        <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="Object.fromEntries(Object.entries({timeEntryId:timeEntryId,
+                partyId:partyId, fromDate:fromDate, thruDate:thruDate, hours:hours, breakHours:breakHours, pieceCount:pieceCount,
+                clientPartyId:clientPartyId, workEffortId:workEffortId, workTypeEnumId:workTypeEnumId, emplPositionClassId:emplPositionClassId,
+                rateTypeEnumId:rateTypeEnumId, facilityId:facilityId, comments:comments}).filter((entry) =&gt; entry[1] != null))"/>
         <default-response url="."/>
     </transition>
-    <transition name="clockInTimeEntry"><service-call name="mantle.work.TimeServices.create#TimeEntryClockIn"/>
+    <transition name="clockInTimeEntry"><service-call name="mantle.work.TimeServices.create#TimeEntryClockIn"
+            in-map="Object.fromEntries(Object.entries({partyId:partyId, clientPartyId:clientPartyId, workEffortId:workEffortId,
+                facilityId:facilityId, workTypeEnumId:workTypeEnumId, emplPositionClassId:emplPositionClassId, rateTypeEnumId:rateTypeEnumId,
+                comments:comments}).filter((entry) =&gt; entry[1] != null))"/>
         <default-response url="."/></transition>
 
     <transition-include name="getFacilityList" location="component://mr-marble/template/facility/FacilityTransitions.xml"/>

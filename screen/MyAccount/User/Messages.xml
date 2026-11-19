@@ -16,6 +16,28 @@ along with this software (see the LICENSE.md file). If not, see
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
         default-menu-title="Messages" default-menu-index="2">
 
+    <!-- A message, or a thread by its root, is the user's when their party sent it, is its To party or one of its parties
+        (CommunicationEventParty); any other is refused for the page and for each transition of the screens below
+        (plans/Security-Review.md SEC-RTE-81). A thread is the user's when they are a party to one message of it. -->
+    <always-actions>
+        <script><![CDATA[
+            const myPartyId = ec.user.userAccount?.partyId
+            const CE = 'mantle.party.communication.CommunicationEvent'
+            const partyTo = (event) => event != null && !!myPartyId && (event.fromPartyId == myPartyId || event.toPartyId == myPartyId ||
+                    ec.entity.find('mantle.party.communication.CommunicationEventParty').condition({communicationEventId: event.communicationEventId,
+                        partyId: myPartyId}).count() > 0)
+            if (communicationEventId) {
+                const event = ec.entity.find(CE).condition('communicationEventId', communicationEventId).one()
+                if (!partyTo(event)) throw new Error(`Message ${communicationEventId} is not one of yours`)
+            }
+            if (rootCommEventId) {
+                const root = ec.entity.find(CE).condition('communicationEventId', rootCommEventId).one()
+                if (!partyTo(root) && !Array.from(ec.entity.find(CE).condition('rootCommEventId', rootCommEventId).limit(200).list()).some(partyTo))
+                    throw new Error(`Message thread ${rootCommEventId} is not one of yours`)
+            }
+        ]]></script>
+    </always-actions>
+
     <subscreens default-item="FindMessage"/>
 
     <widgets>

@@ -28,13 +28,29 @@ along with this software (see the LICENSE.md file). If not, see
 
     <actions>
         <set field="extraPathNameList" from="sri.getScreenUrlInfo().extraPathNameList"/>
+        <set field="wikiPage" from="null"/>
+        <set field="wikiSpace" from="null"/>
+        <set field="isRootPage" from="false"/>
         <if condition="!isCreate || isCreate == 'false'">
-            <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
-            <set field="pageText" from="pageReference?.exists ? ec.resource.getLocationText(pageLocation, false) : ''"/>
+            <!-- the page's info in a map of its own, never the context, and its text from the page found by its space and
+                path, never from a location (SEC-SCR-81) -->
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" out-map="pageInfo"
+                    in-map="{wikiSpaceId:wikiSpaceId, pagePath:pagePath, wikiPageId:wikiPageId, extraPathNameList:extraPathNameList}"/>
+            <set field="pageText" from="''"/>
+            <!-- no such space, or a page the user may not view: nothing of it is read -->
+            <if condition="ec.message.hasError()"><return/></if>
+            <set field="wikiSpaceId" from="pageInfo.wikiSpaceId"/>
+            <set field="pagePath" from="pageInfo.pagePath"/>
+            <set field="parentPath" from="pageInfo.parentPath"/>
+            <set field="pageName" from="pageInfo.pageName"/>
+            <set field="wikiType" from="pageInfo.wikiType"/>
+            <set field="wikiPage" from="pageInfo.wikiPage"/>
+            <set field="wikiSpace" from="pageInfo.wikiSpace"/>
+            <set field="pageText" from="pageInfo.pageReference?.exists ? (pageInfo.pageReference.getText() ?? '') : ''"/>
+            <set field="isRootPage" from="!!pageInfo.pageReference?.exists &amp;&amp; !pageInfo.pagePath"/>
         </if>
         <set field="currentPagePath" from="pagePath"/>
         <!-- <service-call name="org.moqui.resource.WikiServices.get#WikiSpacePages" in-map="context" out-map="context"/> -->
-        <set field="isRootPage" from="pageReference?.exists &amp;&amp; !pagePath"/>
         <set field="wikiType" from="wikiType || 'md'"/>
     </actions>
     <widgets>

@@ -18,12 +18,26 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="findInvoice"><default-response url="."/></transition>
     <transition name="editInvoice"><default-response url="../EditExpenseInvoice"/></transition>
+    <!-- the user's own invoices: the party is the user's, never a posted fromPartyId or workerPartyId (the partyId of
+        MyAccount.xml's pre-actions is not set for a transition), and an existing invoice time goes on is the user's own open
+        one (plans/Security-Review.md SEC-RTE-81) -->
     <transition name="createInvoice">
-        <service-call name="mantle.account.InvoiceServices.create#ProjectExpenseInvoice" in-map="context"/>
+        <service-call name="mantle.account.InvoiceServices.create#ProjectExpenseInvoice" in-map="{fromPartyId:ec.user.userAccount?.partyId,
+                workEffortId:workEffortId, invoiceDate:invoiceDate, description:description}"/>
         <default-response url="../EditExpenseInvoice"/>
     </transition>
     <transition name="createProjectInvoiceItems">
-        <service-call name="mantle.account.InvoiceServices.create#ProjectInvoiceItems" in-map="context"/>
+        <actions>
+            <set field="userPartyId" from="ec.user.userAccount?.partyId"/>
+            <if condition="!userPartyId"><return error="true" message="Your account has no party to invoice time for"/></if>
+            <if condition="invoiceId">
+                <entity-find-one entity-name="mantle.account.invoice.Invoice" value-field="invoice"/>
+                <if condition="invoice == null || invoice.fromPartyId != userPartyId || invoice.statusId != 'InvoiceIncoming'">
+                    <return error="true" message="Invoice #${invoiceId} is not an open invoice of yours"/></if>
+            </if>
+            <service-call name="mantle.account.InvoiceServices.create#ProjectInvoiceItems" in-map="{invoiceId:(invoiceId || null),
+                    workEffortId:workEffortId, thruDate:thruDate, ratePurposeEnumId:'RaprVendor', workerPartyId:userPartyId}"/>
+        </actions>
         <default-response url="."/>
     </transition>
 

@@ -56,6 +56,9 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
             <row-actions>
                 <entity-find-one entity-name="moqui.resource.wiki.WikiSpace" value-field="wikiSpace" cache="true"/>
+                <!-- the space's public blog URL is a pattern: a ${name} in it takes a value of the post as text, never an
+                    expression run as a template (a stored text is not script, SEC-SCR-81) -->
+                <set field="publicBlogLink" from="wikiSpace?.publicBlogUrl ? ec.resource.script('component://mr-mantle/service/mantle/other/PublicUrlPattern.js').fill(wikiSpace.publicBlogUrl, {pagePath:pagePath, wikiSpaceId:wikiSpaceId, wikiPageId:wikiPageId, wikiBlogId:wikiBlogId}) : null"/>
                 <entity-find entity-name="moqui.resource.wiki.WikiBlogCategoryDetail" list="blogCategoryList">
                     <econdition field-name="wikiBlogId"/></entity-find>
             </row-actions>
@@ -93,8 +96,8 @@ along with this software (see the LICENSE.md file). If not, see
             </field>
             <field name="viewPage"><default-field title=""><link url="../wiki/${wikiSpaceId}/${pagePath}"
                     text="Wiki Page" link-type="anchor" condition="wikiSpaceId"/></default-field></field>
-            <field name="publicPage"><default-field title=""><link url="${ec.resource.expand(wikiSpace.publicBlogUrl, null, null, false)}"
-                    text="Public Link" url-type="plain" link-type="anchor" target-window="_blank" condition="wikiSpace?.publicBlogUrl"/></default-field></field>
+            <field name="publicPage"><default-field title=""><link url="${publicBlogLink}"
+                    text="Public Link" url-type="plain" link-type="anchor" target-window="_blank" condition="publicBlogLink"/></default-field></field>
 
             <field name="findButton"><header-field title="Find"><submit/></header-field></field>
         </form-list>

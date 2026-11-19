@@ -16,7 +16,11 @@ along with this software (see the LICENSE.md file). If not, see
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
         default-menu-title="Wiki Spaces" default-menu-include="false">
 
-    <transition name="createSpace"><service-call name="org.moqui.resource.WikiServices.create#WikiSpace" in-map="context"/>
+    <!-- only the fields of the form: a space's script, decorator and storage settings are not taken from a request here
+        (SEC-SCR-81; Wiki.eecas.xml checks who may set each) -->
+    <transition name="createSpace"><service-call name="org.moqui.resource.WikiServices.create#WikiSpace"
+            in-map="{wikiSpaceId:wikiSpaceId, description:description, restrictView:restrictView, restrictUpdate:restrictUpdate,
+                allowAnyHtml:allowAnyHtml, wikiType:wikiType, rootPageDirectory:rootPageDirectory, rootPageLocation:rootPageLocation}"/>
         <default-response url="."/></transition>
     <transition name="editSpace"><default-response url="../EditWikiSpace"/></transition>
 
@@ -31,19 +35,23 @@ along with this software (see the LICENSE.md file). If not, see
                     <option key="N"/><option key="Y"/></drop-down></default-field></field>
                 <field name="restrictUpdate"><default-field><drop-down no-current-selected-key="N" current="selected">
                     <option key="N"/><option key="Y"/></drop-down></default-field></field>
-                <field name="allowAnyHtml"><default-field><drop-down no-current-selected-key="N" current="selected">
+                <field name="allowAnyHtml"><default-field tooltip="Y only for a system administrator"><drop-down no-current-selected-key="N" current="selected">
                     <option key="N"/><option key="Y"/></drop-down></default-field></field>
+                <!-- the types this user may give a page, not every template renderer's: a script type only for a holder of
+                    DATABASE_ADMIN (SEC-SCR-81) -->
                 <field name="wikiType"><default-field><drop-down no-current-selected-key="md">
-                    <list-options list="ec.resource.getTemplateRendererExtensionSet()"/>
+                    <list-options list="ec.service.sync().name('org.moqui.resource.WikiServices.get#WikiPageTypes').call().wikiTypeList"/>
                 </drop-down></default-field></field>
+                <!-- a space's own place in the database for anyone; another directory or location takes pages from wherever it
+                    names, so only a system administrator gives one (Wiki.eecas.xml) -->
                 <field name="rootPageDirectory"><default-field>
                     <drop-down combo-box="true">
-                        <option key="dbresource://WikiSpace"/>
-                        <option key="WikiSpace" text="runtime/WikiSpace"/>
-                        <option key="content://main/WikiSpace"/>
+                        <option key="dbresource://WikiSpace" text="Database (dbresource://WikiSpace)"/>
+                        <option key="WikiSpace" text="runtime/WikiSpace (system administrators only)"/>
+                        <option key="content://main/WikiSpace" text="content://main/WikiSpace (system administrators only)"/>
                     </drop-down>
                 </default-field></field>
-                <field name="rootPageLocation"><default-field title="Root Page Override" tooltip="Select a root page directory unless you know what you're doing and really need this, should end in filename with extension based on wiki type like .md">
+                <field name="rootPageLocation"><default-field title="Root Page Override" tooltip="System administrators only. Select a root page directory unless you know what you're doing and really need this, should end in filename with extension based on wiki type like .md">
                     <text-line size="60"/>
                 </default-field></field>
 

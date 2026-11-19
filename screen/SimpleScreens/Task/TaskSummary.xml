@@ -346,7 +346,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     communicationEventId:commEventDetail.communicationEventId}"
                                 confirmation="Delete comment ${commEventDetail.subject}?"/>
 
-                        <label text="${commEventDetail.body}" type="pre" encode="false"/>
+                        <label text="${commEventDetail.body}" type="pre"/>
 
                         <section name="ChildNestedComments">
                             <condition><expression>childCeList</expression></condition>

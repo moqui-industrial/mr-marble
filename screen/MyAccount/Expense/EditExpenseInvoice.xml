@@ -16,22 +16,37 @@ along with this software (see the LICENSE.md file). If not, see
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
         default-menu-title="Expense Invoice" default-menu-index="1">
 
-    <!-- TODO: make sure user partyId is invoice.fromPartyId... do with artifact authz? -->
-
     <parameter name="invoiceId" required="true"/>
 
-    <transition name="updateInvoice"><service-call name="update#mantle.account.invoice.Invoice" in-map="context"/>
-        <default-response url="."/></transition>
-    <transition name="createProjectInvoiceItems"><service-call name="mantle.account.InvoiceServices.create#ProjectInvoiceItems" in-map="context"/>
-        <default-response url="."/></transition>
-
-    <pre-actions>
-        <set field="partyId" from="ec.user.userAccount.partyId"/>
+    <!-- the user's own expense invoice, for the page and for each transition: pre-actions do not run for a transition, so
+        a check there let a post change anyone's invoice (plans/Security-Review.md SEC-RTE-81) -->
+    <always-actions>
+        <set field="partyId" from="ec.user.userAccount?.partyId"/>
         <entity-find-one entity-name="mantle.account.invoice.Invoice" value-field="invoice"/>
-        <if condition="invoice.fromPartyId != partyId">
+        <if condition="invoice == null || !partyId || invoice.fromPartyId != partyId">
             <script>throw new Error(`You may not view or edit Invoice #${invoiceId}`)</script>
         </if>
-    </pre-actions>
+    </always-actions>
+
+    <!-- only what the screen offers: its description while the invoice is incoming, and submit or cancel it -->
+    <transition name="updateInvoice">
+        <actions>
+            <if condition="invoice.statusId != 'InvoiceIncoming'"><return error="true" message="Invoice #${invoiceId} is no longer open for changes"/></if>
+            <if condition="statusId &amp;&amp; !['InvoiceReceived', 'InvoiceCancelled'].includes(statusId)">
+                <return error="true" message="An expense invoice is submitted or cancelled here"/></if>
+            <set field="invoiceChange" from="{invoiceId:invoiceId}"/>
+            <if condition="description != null"><set field="invoiceChange.description" from="description"/></if>
+            <if condition="statusId"><set field="invoiceChange.statusId" from="statusId"/></if>
+            <service-call name="update#mantle.account.invoice.Invoice" in-map="invoiceChange"/>
+        </actions>
+        <default-response url="."/></transition>
+    <transition name="createProjectInvoiceItems">
+        <actions>
+            <if condition="invoice.statusId != 'InvoiceIncoming'"><return error="true" message="Invoice #${invoiceId} is no longer open for changes"/></if>
+            <service-call name="mantle.account.InvoiceServices.create#ProjectInvoiceItems" in-map="{invoiceId:invoiceId,
+                    workEffortId:workEffortId, thruDate:thruDate, ratePurposeEnumId:'RaprVendor', workerPartyId:partyId}"/>
+        </actions>
+        <default-response url="."/></transition>
     <actions>
         <service-call name="mantle.account.InvoiceServices.get#InvoiceTotal" in-map="{invoiceId:invoiceId}" out-map="context"/>
 

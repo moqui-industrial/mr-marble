@@ -45,7 +45,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <dynamic-dialog id="EditCommentContainer${uniqueExtension}" button-text="Edit" transition="RequestCommentUpdate">
                         <parameter name="communicationEventId" from="childCe.communicationEventId"/></dynamic-dialog>
 
-                    <label text="${childCe.body}" type="pre" encode="false"/>
+                    <label text="${childCe.body}" type="pre"/>
 
                     <!-- any nested child comments? -->
                     <section name="ChildNestedComments" condition="childFilteredCeList?.length">

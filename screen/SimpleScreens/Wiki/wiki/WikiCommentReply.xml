@@ -19,8 +19,21 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="wikiPageId"/>
     <parameter name="parentCommEventId"/>
 
+    <!-- a reply to a comment of a page the user may view, from the user: the parent's thread is a page's comments
+        (WikiPageCommunicationEvent) and get#WikiPageAccess lets the user view that page (plans/Security-Review.md SEC-RTE-81) -->
+    <always-actions>
+        <script><![CDATA[
+            const parent = parentCommEventId ? ec.entity.find('mantle.party.communication.CommunicationEvent').condition('communicationEventId', parentCommEventId).one() : null
+            const rootId = parent ? (parent.rootCommEventId || parent.communicationEventId) : null
+            const join = rootId ? ec.entity.find('mantle.party.communication.WikiPageCommunicationEvent').condition('communicationEventId', rootId).list()[0] : null
+            const access = join ? ec.service.sync().name('org.moqui.resource.WikiServices.get#WikiPageAccess').parameter('wikiPageId', join.wikiPageId).call() : null
+            if (!access?.canView) throw new Error(`Comment ${parentCommEventId} not found`)
+        ]]></script>
+    </always-actions>
+
     <transition name="replyComment">
-        <service-call name="mantle.party.CommunicationServices.reply#CommunicationEvent" in-map="context"/>
+        <service-call name="mantle.party.CommunicationServices.reply#CommunicationEvent"
+                in-map="{parentCommEventId:parentCommEventId, subject:subject, body:body, fromPartyId:ec.user.userAccount?.partyId}"/>
         <default-response url=".."/>
     </transition>
 

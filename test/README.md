@@ -43,8 +43,19 @@ The regression suite (`test/`):
 - `OrderRoleFilters`: evaluates `FindOrder.xml`'s two OrgInternal `econdition ignore` expressions for ten `orderType`
   values against Java's case-insensitive sales/purchase behavior.
 - `MessageRecipient`: My Account's message with no To party names no recipient ("to null" before).
-- `WikiPageTui`: a markdown wiki page reaches the terminal as one markdown node with its id.
+- `WikiPage`: a wiki page renders through `render#WikiPage` (its HTML cleaned, not a template, under `v-pre` in qvt),
+  a request's `pageLocation` is ignored, a comment's text is encoded, and a markdown page reaches the terminal as one
+  markdown node with its id.
+- `PrintTemplate`: a print screen renders its own template, never a request's `templateLocation`.
+- `MyAccountRecords`: as a My Account user who is not ADMIN, a post naming another party's contact information,
+  message, time entry, request content or expense invoice changes none of them, and their message does not render.
+- `MyAccountUpdate`: My Account's `updateUser` changes only the caller's account, whatever `userId`, `userId_0` or
+  `username` the post names.
 - `CreateDialogValues`: New Request's initial status and New Product's name are not taken from the find's parameters.
+- `LookupDocumentType`: the party and product lookups search the app's own party and product documents, whatever
+  `documentType` a request names; Quick Search (html) offers no message or wiki page type.
+- `ProductContentLocation`: Catalog's New by Location makes a product content row through Mantle's
+  `create#ProductContent`, so a description outside the product's content folder is refused; an image by URL is made.
 - `ScreenReport`: lists every screen with whether a sweep, a targeted spec or the browser smoke reaches it, and its
   companion files; ignored unless `mrss_screen_report` names the file. The checklist in `../MIGRATION-STATUS.md` is
   ticked by hand.
@@ -55,7 +66,7 @@ CSRF enforcement, every browser interaction or physical printing.
 ## Client specs
 
 `test/client/` holds specs that run outside the server against a running one, in headless Chromium
-(`docs/dev/Client-Testing.md` in MR Moqui). `--serve` starts the server `test/client/suite.js` declares, runs the specs
+(`docs/dev/JS-Test-Client.md` in MR Moqui). `--serve` starts the server `test/client/suite.js` declares, runs the specs
 and stops it:
 
 ```sh

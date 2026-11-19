@@ -17,10 +17,12 @@ along with this software (see the LICENSE.md file). If not, see
 
     <parameter name="requestId" required="true"/>
 
+    <!-- the user's party is a party to the request, for the page and for each transition: a transition's own actions (the
+        download) run past a returned error, so it throws (plans/Security-Review.md SEC-RTE-81) -->
     <always-actions>
         <entity-find entity-name="mantle.request.RequestParty" list="checkRpList">
-            <date-filter/><econdition field-name="requestId"/><econdition field-name="partyId" from="ec.user.userAccount.partyId"/></entity-find>
-        <if condition="!checkRpList?.length"><return error="true" message="You are not a party to request ${requestId}"/></if>
+            <date-filter/><econdition field-name="requestId"/><econdition field-name="partyId" from="ec.user.userAccount?.partyId || '_NA_'"/></entity-find>
+        <if condition="!checkRpList?.length"><script>throw new Error(`You are not a party to request ${requestId}`)</script></if>
     </always-actions>
 
     <transition name="updateRequest"><service-call name="mantle.request.RequestServices.update#Request"/><default-response url="."/></transition>
@@ -33,14 +35,28 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="deleteComment"><service-call name="mantle.request.RequestServices.delete#RequestComment"/>
         <default-response url="."/></transition>
 
-    <transition name="createContent"><service-call name="mantle.request.RequestServices.create#RequestContent"/>
+    <!-- a request's content is changed and read only as content of this request, never another's, nor moved to this one -->
+    <transition name="createContent"><service-call name="mantle.request.RequestServices.create#RequestContent"
+            in-map="{requestId:requestId, contentTypeEnumId:contentTypeEnumId, contentFile:contentFile, description:description}"/>
         <default-response url="."/></transition>
-    <transition name="updateContent"><service-call name="mantle.request.RequestServices.update#RequestContent"/>
+    <transition name="updateContent">
+        <actions>
+            <entity-find-one entity-name="mantle.request.RequestContent" value-field="requestContent">
+                <field-map field-name="requestContentId"/></entity-find-one>
+            <if condition="requestContent == null || requestContent.requestId != requestId">
+                <return error="true" message="Content ${requestContentId} is not content of request ${requestId}"/></if>
+            <service-call name="mantle.request.RequestServices.update#RequestContent" in-map="Object.fromEntries(Object.entries({requestContentId:requestContentId,
+                    contentTypeEnumId:contentTypeEnumId, contentFile:contentFile, description:description}).filter((entry) =&gt; entry[1] != null))"/>
+        </actions>
         <default-response url="."/></transition>
     <transition name="downloadContent" read-only="true">
         <parameter name="requestContentId"/>
-        <actions><entity-find-one entity-name="mantle.request.RequestContent" value-field="requestContent"/>
-            <script>ec.web.sendResourceResponse(requestContent?.contentLocation)</script></actions>
+        <actions>
+            <entity-find entity-name="mantle.request.RequestContent" list="requestContentList">
+                <econdition field-name="requestContentId"/><econdition field-name="requestId"/></entity-find>
+            <if condition="!requestContentList.length"><return error="true" message="Content ${requestContentId} is not content of request ${requestId}"/></if>
+            <script>ec.web.sendResourceResponse(requestContentList[0].contentLocation)</script>
+        </actions>
         <default-response type="none"/>
     </transition>
 

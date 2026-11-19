@@ -43,17 +43,37 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="deleteAttachment"><service-call name="org.moqui.resource.WikiServices.delete#WikiPageAttachment"/>
         <default-response url="."/></transition>
     <transition name="downloadAttachment" read-only="true"><actions>
-        <service-call name="org.moqui.resource.WikiServices.get#WikiPageAttachment" in-map="context" out-map="context"/>
-        <script>ec.web.sendResourceResponse(attachmentReference.location)</script>
+        <service-call name="org.moqui.resource.WikiServices.get#WikiPageAttachment" in-map="context" out-map="attachmentOut"/>
+        <if condition="ec.message.hasError() || !attachmentOut?.attachmentReference"><return/></if>
+        <script>ec.web.sendResourceResponse(attachmentOut.attachmentReference.location)</script>
     </actions><default-response type="none"/></transition>
 
     <transition name="wikiCommentReply"><default-response url="WikiCommentReply"/></transition>
-    <transition name="addComment"><service-call name="mantle.party.CommunicationServices.add#WikiPageComment"/>
+    <!-- a comment on a page the user may view, a category on one the user may change (get#WikiPageAccess), with the forms'
+        fields only (plans/Security-Review.md SEC-RTE-81) -->
+    <transition name="addComment">
+        <actions>
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiPageId:wikiPageId}" out-map="commentAccess"/>
+            <if condition="!wikiPageId || !commentAccess?.canView"><return error="true" message="Page not found"/></if>
+            <service-call name="mantle.party.CommunicationServices.add#WikiPageComment" in-map="{wikiPageId:wikiPageId, subject:subject, body:body}"/>
+        </actions>
         <default-response url="."/></transition>
 
-    <transition name="addCategory"><service-call name="store#moqui.resource.wiki.WikiPageCategoryMember"/>
+    <transition name="addCategory">
+        <actions>
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiPageId:wikiPageId}" out-map="categoryAccess"/>
+            <if condition="!wikiPageId || !categoryAccess?.canUpdate"><return error="true" message="You may not change the categories of this page"/></if>
+            <service-call name="store#moqui.resource.wiki.WikiPageCategoryMember" in-map="{wikiPageId:wikiPageId,
+                    wikiPageCategoryId:wikiPageCategoryId, fromDate:fromDate, thruDate:thruDate}"/>
+        </actions>
         <default-response url="."/></transition>
-    <transition name="removeCategory"><service-call name="delete#moqui.resource.wiki.WikiPageCategoryMember"/>
+    <transition name="removeCategory">
+        <actions>
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiPageId:wikiPageId}" out-map="categoryAccess"/>
+            <if condition="!wikiPageId || !categoryAccess?.canUpdate"><return error="true" message="You may not change the categories of this page"/></if>
+            <service-call name="delete#moqui.resource.wiki.WikiPageCategoryMember" in-map="{wikiPageId:wikiPageId,
+                    wikiPageCategoryId:wikiPageCategoryId, fromDate:fromDate}"/>
+        </actions>
         <default-response url="."/></transition>
 
     <transition name="getSpacePages">
@@ -63,12 +83,17 @@ along with this software (see the LICENSE.md file). If not, see
         <parameter name="valueUsePath"/>
         <parameter name="includeRoot"/>
         <actions>
+            <!-- the pages of a space the user may view (get#WikiPageAccess); a page by its id only in that space -->
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiSpaceId:wikiSpaceId}" out-map="spaceAccess"/>
+            <if condition="ec.message.hasError() || !wikiSpaceId || !spaceAccess?.canView">
+                <script>ec.message.clearErrors(); ec.web.sendJsonResponse({options:[], pageSize:20, count:0})</script><return/></if>
             <set field="pageIndex" from="pageIndex || 0"/>
             <set field="pageSize" from="pageSize || 20"/>
             <set field="term" from="term || ''"/>
             <set field="valueUsePathBool" from="valueUsePath == 'true'"/>
             <entity-find-one entity-name="moqui.resource.wiki.WikiPage" value-field="wikiPage">
                 <field-map field-name="wikiPageId" from="term"/></entity-find-one>
+            <if condition="wikiPage != null &amp;&amp; wikiPage.wikiSpaceId != wikiSpaceId"><set field="wikiPage" from="null"/></if>
             <if condition="wikiPage == null">
                 <entity-find entity-name="moqui.resource.wiki.WikiPage" list="byPathPageList">
                     <econdition field-name="wikiSpaceId"/>
@@ -103,45 +128,80 @@ along with this software (see the LICENSE.md file). If not, see
 
         <set field="extraPathNameList" from="sri.getScreenUrlInfo().extraPathNameList"/>
         <!-- <log level="warn" message="wiki pre-actions extraPathNameList ${extraPathNameList}"/> -->
-        <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" in-map="context" out-map="context"/>
+        <!-- the page's info in a map of its own, never the context, so no name of the request (pageLocation, pageReference,
+            wikiSpace) stands for the page's (SEC-SCR-81) -->
+        <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" out-map="pageInfo"
+                in-map="{wikiSpaceId:wikiSpaceId, pagePath:pagePath, wikiPageId:wikiPageId, versionName:versionName, extraPathNameList:extraPathNameList}"/>
+        <!-- no such space, or a page the user may not view: nothing of it is read, and no offer to create it -->
+        <set field="pageRefused" from="ec.message.hasError()"/>
+        <if condition="pageRefused"><return/></if>
 
         <!-- redirect to EditWikiPage to create instead of trying to render a page that doesn't exist -->
         <script><![CDATA[
-            // ec.logger.warn(`========== before redirect context=${context}`)
-            if (!pageReference?.exists) {
-                ec.logger.info(`Page at ${pageReference} does not exist, forwarding to create`)
+            if (!pageInfo.pageReference?.exists) {
+                ec.logger.info(`Page at ${pageInfo.pageReference} does not exist, forwarding to create`)
                 // NOTE: have to do a little more work here because of the extra path that messes up the relative screen loc:
                 //     ../EditWikiPage from the screen path before the extra path, written from the root
                 const preTransitionPath = sri.getScreenUrlInfo().preTransitionPathNameList
                 const editWikiUrl = sri.buildUrl('//' + preTransitionPath.slice(0, -1).concat(['EditWikiPage']).join('/'))
-                editWikiUrl.addParameter("wikiSpaceId", wikiSpaceId)
-                editWikiUrl.addParameter("parentPath", parentPath)
-                editWikiUrl.addParameter("pageName", pageName)
+                editWikiUrl.addParameter("wikiSpaceId", pageInfo.wikiSpaceId)
+                editWikiUrl.addParameter("parentPath", pageInfo.parentPath)
+                editWikiUrl.addParameter("pageName", pageInfo.pageName)
                 editWikiUrl.addParameter("isCreate", "true")
                 sri.sendRedirectAndStopRender(editWikiUrl.getPathWithParams())
             }
         ]]></script>
     </pre-actions>
-    
+
     <actions>
+        <!-- the page's values from get#WikiPageInfo (pre-actions), only when it found a page the user may view; the tree's own
+            loads (the actions transition) run these actions with no page: no page values and no children then -->
+        <script><![CDATA[
+            const info = !ec.message.hasError() && pageInfo?.pageReference ? pageInfo : null
+            pageFound = info != null
+            if (info) {
+                wikiSpaceId = info.wikiSpaceId
+                pagePath = info.pagePath
+                wikiPageId = info.wikiPageId
+            } else if (pageRefused === true) {
+                // a page refused: nothing of the request's names, so its comments, categories and history are not read
+                wikiSpaceId = null
+                pagePath = null
+                wikiPageId = null
+            }
+            wikiSpace = info?.wikiSpace ?? null
+            wikiPage = info?.wikiPage ?? null
+            pageReference = info?.pageReference ?? null
+            wikiType = info?.wikiType ?? null
+            pageName = info?.pageName ?? null
+            parentPath = info?.parentPath ?? null
+            versionName = info?.versionName ?? null
+            currentVersionName = info?.currentVersionName ?? null
+            publishedVersionName = info?.publishedVersionName ?? null
+            breadcrumbMapList = info?.breadcrumbMapList ?? []
+            // a space's public URLs are patterns: a ${name} in one takes a value of the page as text, never an expression
+            // run as a template (a stored text is not script, SEC-SCR-81)
+            const fill = ec.resource.script('component://mr-mantle/service/mantle/other/PublicUrlPattern.js').fill
+            const pageValues = {wikiSpaceId, pagePath, wikiPageId, pageName, versionName}
+            publicPageLink = wikiSpace?.publicPageUrl ? fill(wikiSpace.publicPageUrl, pageValues) : null
+            attachmentList = Array.from(info?.attachmentList ?? []).map((attachment) => ({filename: attachment.filename,
+                contentType: attachment.contentType, lastModified: attachment.lastModified,
+                publicUrl: wikiSpace?.publicAttachmentUrl ? fill(wikiSpace.publicAttachmentUrl,
+                    Object.assign({}, pageValues, {filename: attachment.filename, contentType: attachment.contentType})) : null}))
+        ]]></script>
         <set field="basePath" from="sri.getCurrentScreenUrl().getScreenOnlyPath()"/>
         <set field="baseLinkPath" from="basePath + '/' + wikiSpaceId"/>
-        <set field="baseLinkUrl" from="sri.getCurrentScreenUrl().getScreenPathUrl() + '/' + wikiSpaceId"/>
         <!-- this is only used for the WikiPageTree.ftl file, not needed otherwise: -->
         <!-- <service-call name="org.moqui.resource.WikiServices.get#WikiSpacePages" in-map="context" out-map="context"/> -->
 
-        <!-- the tree's own loads (the actions transition) run these actions with no page: no children then -->
         <set field="childPageList" from="pageReference ? pageReference.getChildren() : []"/>
-        <!-- the terminal shows the page's own text: a markdown page as markdown, other markup as plain text -->
-        <script><![CDATA[
-            tuiPageText = ''
-            try {
-                if (pageReference) {
-                    tuiPageText = (versionName && currentVersionName != versionName ? pageReference.getText(versionName) : pageReference.getText()) || ''
-                    if (wikiType && wikiType.startsWith('html')) tuiPageText = tuiPageText.replace(/<[^>]*>/g, '')
-                }
-            } catch (err) { ec.logger.warn(`Could not read the text of wiki page ${pageLocation}: ${err.message}`) }
-        ]]></script>
+        <!-- the page as HTML to show, by its space and path, the renderer chosen by its type and the space, never a location
+            rendered as a template (SEC-SCR-81); a markdown page's relative links resolve against this screen's path -->
+        <set field="rendered" from="null"/>
+        <if condition="pageFound &amp;&amp; !wikiSpace?.decoratorScreenLocation">
+            <service-call name="org.moqui.resource.WikiServices.render#WikiPage" out-map="rendered"
+                    in-map="{wikiSpaceId:wikiSpaceId, pagePath:pagePath || '', versionName:versionName, baseLinkUrl:baseLinkPath}"/>
+        </if>
 
         <!-- Comments -->
         <entity-find entity-name="mantle.party.communication.WikiPageCommEventDetail" list="commEventDetailList">
@@ -154,7 +214,7 @@ along with this software (see the LICENSE.md file). If not, see
     <widgets>
         <container-row><row-col md="3">
             <container-box><box-header title="Page Tree"/><box-body>
-                <link text="${wikiSpace?.description||'Space Root'}" url="${basePath}/${wikiSpace.wikiSpaceId}" link-type="anchor" url-noparam="true"/>
+                <link text="${wikiSpace?.description||'Space Root'}" url="${basePath}/${wikiSpaceId}" link-type="anchor" url-noparam="true"/>
                 <!-- using fancy expanding tree instead of flat list:
                 <container id="wiki-page-list">
                     <section-iterate name="PageList" list="allChildFileFlatList" entry="childFile"><widgets>
@@ -211,8 +271,8 @@ along with this software (see the LICENSE.md file). If not, see
             <container>
                 <label text="Seq: ${wikiPage?.sequenceNum || 50} ID: ${wikiPageId||''} (${wikiType})${versionName ? ' Version ' + versionName.substring(0, 12) : ''}${publishedVersionName ? ' Published ' + publishedVersionName.substring(0, 12) : ''}"/>
                 <label text="(this version published)" condition="publishedVersionName &amp;&amp; publishedVersionName == versionName" style="text-success"/>
-                <link text="Public Link" url="${ec.resource.expand(wikiSpace.publicPageUrl, null, null, false)}" url-type="plain"
-                        link-type="anchor" target-window="_blank" condition="wikiSpace?.publicPageUrl"/>
+                <link text="Public Link" url="${publicPageLink}" url-type="plain"
+                        link-type="anchor" target-window="_blank" condition="publicPageLink"/>
             </container>
             <container-box><box-header title="${pageName||'[No Name]'}"/><box-toolbar>
                 <link url="setPublishedVersion" text="Publish Version ${versionName.substring(0, 12)}"
@@ -225,8 +285,10 @@ along with this software (see the LICENSE.md file). If not, see
                         <field name="wikiSpaceId"><default-field><hidden/></default-field></field>
                         <field name="isCreate"><default-field><hidden default-value="true"/></default-field></field>
                         <field name="parentPath" from="pagePath"><default-field><display/></default-field></field>
-                        <field name="wikiType"><default-field><drop-down>
-                            <list-options list="ec.resource.getTemplateRendererExtensionSet()"/>
+                        <!-- the types this user may give a page, not every template renderer's: a script type only for a
+                            holder of DATABASE_ADMIN (SEC-SCR-81) -->
+                        <field name="wikiType"><default-field><drop-down no-current-selected-key="md">
+                            <list-options list="ec.service.sync().name('org.moqui.resource.WikiServices.get#WikiPageTypes').call().wikiTypeList"/>
                         </drop-down></default-field></field>
                         <field name="submitButton"><default-field title="Add Page"><submit/></default-field></field>
                     </form-single>
@@ -263,13 +325,15 @@ along with this software (see the LICENSE.md file). If not, see
                 <container id="wiki-page-area">
                     <section name="WikiPageInclude">
                         <condition><expression>!wikiSpace?.decoratorScreenLocation</expression></condition>
-                        <actions><script>sri.baseLinkUrl(baseLinkUrl)</script></actions>
-                        <widgets><render-mode><text type="html,vuet,qvt" template="true"
-                                location="${pageLocation||''}${versionName &amp;&amp; currentVersionName != versionName ? '#' + versionName.substring(0, 12) : ''}"/>
-                            <text type="tui"><![CDATA[${JSON.stringify(wikiType == 'md' ? {t: 'markdown', id: 'WikiPageText', text: tuiPageText || ''} : {t: 'text', style: 'pre', text: tuiPageText || ''})}]]></text></render-mode></widgets>
+                        <!-- render#WikiPage's HTML, written with no template expansion; v-pre: the page is not a Vue template,
+                            so a {{ }} in it stays text. The terminal gets a markdown page's own text, any other page's HTML
+                            as terminal text -->
+                        <widgets><render-mode><text type="html,vuet,qvt"><![CDATA[<div v-pre>${rendered?.pageHtml || ''}</div>]]></text>
+                            <text type="tui"><![CDATA[${JSON.stringify(rendered?.renderedAs == 'markdown' ?
+                                {t: 'markdown', id: 'WikiPageText', text: String(rendered.pageText || '')} :
+                                Object.assign({t: 'html', id: 'WikiPageText'}, JSON.parse(sri.htmlText(String(rendered?.pageHtml || '')))))}]]></text></render-mode></widgets>
                         <fail-widgets><include-screen location="${wikiSpace.decoratorScreenLocation}"/></fail-widgets>
                     </section>
-                    <section name="ResetBaseLink"><actions><script>sri.baseLinkUrl(null)</script></actions><widgets/></section>
                 </container>
                 <!-- CONSIDER: figure out a way to make configured space root screen (wikiSpace.decoratorScreenLocation) a subscreen
                        instead of including it explicitly as above
@@ -277,7 +341,7 @@ along with this software (see the LICENSE.md file). If not, see
                 -->
             </box-body></container-box>
 
-            <section name="WikiPageCommentSection" condition="wikiPageId"><widgets>
+            <section name="WikiPageCommentSection" condition="pageFound &amp;&amp; wikiPageId"><widgets>
                 <container-box><box-header title="Comments"/><box-toolbar>
                     <container-dialog id="AddCommentDialog" button-text="Add Comment">
                         <form-single name="AddCommentForm" transition="addComment">
@@ -305,7 +369,7 @@ along with this software (see the LICENSE.md file). If not, see
                             <dynamic-dialog id="ReplyCommentContainer${uniqueExtension}" button-text="Reply" transition="wikiCommentReply">
                                 <parameter name="parentCommEventId" from="commEventDetail.communicationEventId"/></dynamic-dialog>
 
-                            <label text="${commEventDetail.body}" type="pre" encode="false"/>
+                            <label text="${commEventDetail.body}" type="pre"/>
 
                             <section name="ChildNestedComments">
                                 <condition><expression>childCeList?.length</expression></condition>
@@ -334,13 +398,13 @@ along with this software (see the LICENSE.md file). If not, see
                             parameter-map="{wikiSpaceId:wikiSpaceId, pagePath:pagePath, filename:attachment.filename}"/>
                     <link url="deleteAttachment" text="" icon="fa fa-trash" btn-type="danger" confirmation="Delete ${attachment.filename} permanently?"
                             parameter-map="{wikiSpaceId:wikiSpaceId, pagePath:pagePath, filename:attachment.filename}"/>
-                    <container><link text="Public Link" url="${ec.resource.expand(wikiSpace.publicAttachmentUrl, null, attachment, false)}" url-type="plain"
-                            link-type="anchor" target-window="_blank" condition="wikiSpace?.publicAttachmentUrl"/></container>
+                    <container><link text="Public Link" url="${attachment.publicUrl}" url-type="plain"
+                            link-type="anchor" target-window="_blank" condition="attachment.publicUrl"/></container>
                     <container><label text="${attachment.contentType} - ${ec.l10n.format(attachment.lastModified, 'yyyy-MM-dd HH:mm')}"/></container>
                 </widgets></section-iterate>
             </box-body></container-box>
 
-            <section name="CategoriesSection" condition="(wikiPageCategories?.length > 0)"><actions>
+            <section name="CategoriesSection" condition="pageFound &amp;&amp; wikiPageId &amp;&amp; (wikiPageCategories?.length > 0)"><actions>
                 <entity-find entity-name="moqui.resource.wiki.WikiPageCategoryMember" list="membershipList">
                     <econdition field-name="wikiPageId"/></entity-find>
             </actions><widgets>
@@ -372,7 +436,7 @@ along with this software (see the LICENSE.md file). If not, see
                 </box-body></container-box>
             </widgets></section>
 
-            <section name="PageRelatedSection" condition="wikiPageId"><actions>
+            <section name="PageRelatedSection" condition="pageFound &amp;&amp; wikiPageId"><actions>
                 <entity-find entity-name="mantle.request.WikiPageAndRequest" list="wparList">
                     <econdition field-name="wikiPageId"/></entity-find>
 

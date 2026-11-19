@@ -62,8 +62,10 @@ along with this software (see the LICENSE.md file). If not, see
                         <tree-sub-node node-name="MessageNode" list="childMessages">
                             <actions>
                                 <set field="messageId" from="treeNodeId.split('/').at(-1)"/>
+                                <!-- only the messages of the thread checked (Messages.xml): a node id of another thread finds none -->
                                 <entity-find entity-name="mantle.party.communication.CommunicationEvent" list="childMessages">
                                     <econdition field-name="parentCommEventId" from="messageId"/>
+                                    <econdition field-name="rootCommEventId" from="rootCommEventId"/>
                                     <order-by field-name="entryDate"/>
                                 </entity-find>
                             </actions>
