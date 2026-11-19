@@ -18,10 +18,10 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="partyId" required="true"/>
 
     <transition name="editParty"><default-response url="../EditParty"/></transition>
-    <transition name="createPartyRelationship"><service-call name="create#mantle.party.PartyRelationship"/>
-        <default-response url="."/></transition>
-    <transition name="updatePartyRelationship"><service-call name="update#mantle.party.PartyRelationship"/>
-        <default-response url="."/></transition>
+    <transition name="createPartyRelationship"><actions><script>ec.resource.script('component://mr-marble/template/party/PartyRelationships.js').create(context)</script></actions>
+        <default-response url="."/><error-response url="."/></transition>
+    <transition name="updatePartyRelationship"><actions><script>ec.resource.script('component://mr-marble/template/party/PartyRelationships.js').update(context)</script></actions>
+        <default-response url="."/><error-response url="."/></transition>
     <transition-include name="searchPartyList" location="component://mr-marble/template/party/PartyForms.xml"/>
 
     <actions>

@@ -58,10 +58,10 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="resetPassword"><service-call name="org.moqui.impl.UserServices.reset#Password"/>
         <default-response url="."/></transition>
 
-    <transition name="createPartyRelationship"><service-call name="create#mantle.party.PartyRelationship"/>
-        <default-response url="."/></transition>
-    <transition name="updatePartyRelationship"><service-call name="update#mantle.party.PartyRelationship"/>
-        <default-response url="."/></transition>
+    <transition name="createPartyRelationship"><actions><script>ec.resource.script('component://mr-marble/template/party/PartyRelationships.js').create(context)</script></actions>
+        <default-response url="."/><error-response url="."/></transition>
+    <transition name="updatePartyRelationship"><actions><script>ec.resource.script('component://mr-marble/template/party/PartyRelationships.js').update(context)</script></actions>
+        <default-response url="."/><error-response url="."/></transition>
     <transition name="addContact"><service-call name="mantle.sales.AccountServices.add#Contact"/>
         <default-response url="."/></transition>
     <transition name="createContact"><service-call name="mantle.sales.AccountServices.create#Contact"/>

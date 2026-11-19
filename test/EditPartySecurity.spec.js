@@ -213,3 +213,41 @@ feature("a party's duplicates show an identification match masked and none by SS
         !matches.some(row => row.partyIdTypeEnumId == "PtidSsn")
     }
 })
+
+// an organization's parent (PrtOrgRollup), which printers, ledgers and party reach read as one family, is set only through
+// Mantle's store#OrganizationParent, never written as a plain relationship (template/party/PartyRelationships.js; SEC-BAP-103
+// review); another relationship is written as before
+feature("Edit Party sets no organization's parent outside Admin's organization rules; another relationship is made as before (SEC-BAP-103)", {
+    when() {
+        for (const partyId of ["SPEC_EPS_ORGA", "SPEC_EPS_ORGB"]) {
+            make("mantle.party.Party", {partyId, partyTypeEnumId: "PtyOrganization"})
+            make("mantle.party.Organization", {partyId, organizationName: "Spec " + partyId})
+            make("mantle.party.PartyRole", {partyId, roleTypeId: "OrgInternal"})
+        }
+        const rollups = () => sys(() => ec.entity.find("mantle.party.PartyRelationship")
+            .condition({fromPartyId: "SPEC_EPS_ORGA", relationshipTypeEnumId: "PrtOrgRollup"}).count())
+        const rollup = post(PLAIN.toLowerCase(), "createPartyRelationship", {partyId: "SPEC_EPS_ORGA", relationshipTypeEnumId: "PrtOrgRollup",
+            fromPartyId: "SPEC_EPS_ORGA", fromRoleTypeId: "OrgInternal", toPartyId: "SPEC_EPS_ORGB", toRoleTypeId: "OrgInternal",
+            fromDate: ec.user.nowTimestamp})
+        const afterPlain = rollups()
+        // a contact relationship, made as before; then turned into a rollup by its change, refused
+        const contact = post(PLAIN.toLowerCase(), "createPartyRelationship", {partyId: "SPEC_EPS_ORGA", relationshipTypeEnumId: "PrtContact",
+            fromPartyId: PARTY, fromRoleTypeId: "Contact", toPartyId: "SPEC_EPS_ORGA", toRoleTypeId: "_NA_", fromDate: ec.user.nowTimestamp})
+        const contactRow = sys(() => ec.entity.find("mantle.party.PartyRelationship")
+            .condition({fromPartyId: PARTY, toPartyId: "SPEC_EPS_ORGA", relationshipTypeEnumId: "PrtContact"}).useCache(false).one())
+        const turned = post(PLAIN.toLowerCase(), "updatePartyRelationship", {partyId: "SPEC_EPS_ORGA",
+            partyRelationshipId: contactRow?.partyRelationshipId, relationshipTypeEnumId: "PrtOrgRollup"})
+        return {rollup, afterPlain, contact, contactRow: !!contactRow, turned, after: rollups(),
+            contactType: sys(() => ec.entity.find("mantle.party.PartyRelationship")
+                .condition("partyRelationshipId", contactRow?.partyRelationshipId).useCache(false).one())?.relationshipTypeEnumId}
+    },
+    then({rollup, afterPlain, contact, contactRow, turned, after, contactType}) {
+        rollup.includes("PERMISSION_DENIED")
+        afterPlain == 0
+        contact == ""
+        contactRow
+        turned.includes("RELATIONSHIP_RESTRICTED")
+        contactType == "PrtContact"
+        after == 0
+    }
+})
