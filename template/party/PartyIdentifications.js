@@ -8,9 +8,11 @@ const finance = ec.resource.script("component://mr-mantle/service/mantle/account
 const taxIdTypes = Array.from(finance.taxIdTypes)
 const sync = name => ec.service.sync().name(name)
 
-// The section's rows, masked (valueText), with an empty idValue for the edit form's new value.
+// The section's rows, masked (valueText), with an empty idValue for the edit form's new value: only for the editor Accounting
+// and Customer Service show them to (RECEIVABLE_EDIT for a customer, PAYABLE_EDIT for a supplier, of one of the user's
+// organizations: scopeFor), never for an employee or to every Party screen user (SEC-BAP-140 review).
 function list(partyId) {
-    if (!partyId) return []
+    if (!partyId || !scopeFor(partyId)) return []
     const wasDisabled = ec.artifactExecution.disableAuthz()
     try {
         return Array.from(finance.execute("identifications", {partyId}).identifications || []).map(row =>
@@ -27,7 +29,9 @@ function scopeFor(partyId) {
     if (!partyId) return null
     const memo = ec.context.get("identificationScopeMemo") || {}
     if (!ec.context.get("identificationScopeMemo")) ec.context.put("identificationScopeMemo", memo)
-    if (partyId in memo) return memo[partyId]
+    // kept by user too: the user can change within one context (a sign-in, a test's login)
+    const key = (ec.user.userId || "") + "|" + partyId
+    if (key in memo) return memo[key]
     const info = sync("mantle.party.PartyServices.get#PartyOrganizationInfo").disableAuthz().call() || {}
     const organizations = Array.from(info.userOrgIds || [])
     if (info.activeOrgId && organizations.includes(info.activeOrgId))
@@ -52,7 +56,7 @@ function scopeFor(partyId) {
             if (found) break
         }
     }
-    memo[partyId] = found
+    memo[key] = found
     return found
 }
 const canEdit = partyId => !!scopeFor(partyId)
@@ -76,7 +80,8 @@ function store(p, update) {
         customerPartyId: p.partyId,
         side: scope.side,
         partyIdTypeEnumId: p.partyIdTypeEnumId,
-        lastUpdatedStamp: existing ? existing.lastUpdatedStamp : null
+        // the stamp the form read, so a change made since is refused (STALE_REVISION), never the row's current one
+        lastUpdatedStamp: update ? p.lastUpdatedStamp || null : null
     }
     if (p.idValue) parameters.idValue = p.idValue
     if ("expireDate" in p) parameters.expireDate = p.expireDate || null

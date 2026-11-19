@@ -96,6 +96,7 @@ feature("Edit Party shows identifications masked and no tax one; only a receivab
         const output = String(rendered.output || "")
         const renderErrors = Array.from(rendered.errorMessages || []).join(" | ")
         ec.message.clearErrors()
+        const plainList = sys(() => ec.resource.script("component://mr-marble/template/party/PartyIdentifications.js").list(PARTY))
         login("john.doe")
         const plainChange = post(PLAIN.toLowerCase(), "updatePartyIdentification", {partyId: PARTY, partyIdTypeEnumId: "PtidPassport", idValue: "PLAIN1234"})
         const plainSsn = identification("PtidSsn")
@@ -104,15 +105,22 @@ feature("Edit Party shows identifications masked and no tax one; only a receivab
         login("john.doe")
         const arSsn = post(AR.toLowerCase(), "updatePartyIdentification", {partyId: PARTY, partyIdTypeEnumId: "PtidSsn", idValue: "999-99-9999"})
         const arMasked = post(AR.toLowerCase(), "updatePartyIdentification", {partyId: PARTY, partyIdTypeEnumId: "PtidPassport", idValue: "•••• 5432"})
-        const arChange = post(AR.toLowerCase(), "updatePartyIdentification", {partyId: PARTY, partyIdTypeEnumId: "PtidPassport", idValue: "P11112222"})
-        return {output, renderErrors, plainChange, plainSsn, arList, arSsn, arMasked, arChange,
+        // a change carries the stamp the form read: with it the change is taken, and the same stamp again is stale (review)
+        const read = arList[0].lastUpdatedStamp
+        const arChange = post(AR.toLowerCase(), "updatePartyIdentification", {partyId: PARTY, partyIdTypeEnumId: "PtidPassport",
+            idValue: "P11112222", lastUpdatedStamp: read})
+        const arStale = post(AR.toLowerCase(), "updatePartyIdentification", {partyId: PARTY, partyIdTypeEnumId: "PtidPassport",
+            idValue: "P33334444", lastUpdatedStamp: read})
+        return {output, renderErrors, plainList, plainChange, plainSsn, arList, arSsn, arMasked, arChange, arStale,
             passport: identification("PtidPassport"), ssn: identification("PtidSsn")}
     },
-    then({output, renderErrors, plainChange, plainSsn, arList, arSsn, arMasked, arChange, passport, ssn}) {
+    then({output, renderErrors, plainList, plainChange, plainSsn, arList, arSsn, arMasked, arChange, arStale, passport, ssn}) {
         renderErrors == ""
         !output.includes(SSN) && !output.includes("6789")
         !output.includes(PASSPORT)
-        output.includes("5432")
+        // a Party screen user who edits neither side sees no identification, masked or not (review)
+        !output.includes("5432")
+        plainList.length == 0
         // the account's sign-in form and its enable and disable links are an account administrator's (SEC-ADM-89)
         !output.includes("disableUserAccount") && !output.includes("enableUserAccount")
         !output.includes("UpdateUserAccount")
@@ -126,6 +134,7 @@ feature("Edit Party shows identifications masked and no tax one; only a receivab
         arSsn.includes("IDENTIFICATION_TYPE_RESTRICTED")
         arMasked.includes("IDENTIFICATION_VALUE_MASKED")
         arChange == ""
+        arStale.includes("STALE_REVISION")
         passport.idValue == "P11112222"
         ssn.idValue == SSN
     }

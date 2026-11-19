@@ -497,6 +497,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <field name="partyIdTypeEnumId"><default-field title="ID Type">
                             <display-entity entity-name="moqui.basic.Enumeration"/>
                         </default-field></field>
+                        <field name="lastUpdatedStamp"><default-field><hidden/></default-field></field>
                         <field name="valueText"><default-field title="ID Value"><display/></default-field></field>
                         <field name="idValue">
                             <conditional-field condition="identificationEdit" title="New Value"><text-line size="20"/></conditional-field>
