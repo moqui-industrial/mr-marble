@@ -47,7 +47,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <parameter name="parentCommEventId" from="childCe.communicationEventId"/>
                     </dynamic-dialog>
 
-                    <label text="${childCe.body}" type="pre" encode="false"/>
+                    <label text="${childCe.body}" type="pre"/>
 
                     <!-- any nested child comments? -->
                     <section name="ChildNestedComments">

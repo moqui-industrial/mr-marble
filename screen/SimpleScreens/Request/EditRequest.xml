@@ -177,7 +177,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     condition="commEventDetail.fromPartyId == ec.user.userAccount.partyId || ec.user.isInGroup('ADMIN') || ec.user.isInGroup('HIVE_MIND_ADMIN')"
                                     confirmation="Delete comment ${commEventDetail.subject}?"/>
 
-                            <label text="${commEventDetail.body}" type="pre" encode="false"/>
+                            <label text="${commEventDetail.body}" type="pre"/>
 
                             <section name="ChildNestedComments">
                                 <condition><expression>childCeList?.length</expression></condition>

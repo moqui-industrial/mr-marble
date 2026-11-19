@@ -49,12 +49,31 @@ along with this software (see the LICENSE.md file). If not, see
     </actions><default-response type="none"/></transition>
 
     <transition name="wikiCommentReply"><default-response url="WikiCommentReply"/></transition>
-    <transition name="addComment"><service-call name="mantle.party.CommunicationServices.add#WikiPageComment"/>
+    <!-- a comment on a page the user may view, a category on one the user may change (get#WikiPageAccess), with the forms'
+        fields only (plans/Security-Review.md SEC-RTE-81) -->
+    <transition name="addComment">
+        <actions>
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiPageId:wikiPageId}" out-map="commentAccess"/>
+            <if condition="!wikiPageId || !commentAccess?.canView"><return error="true" message="Page not found"/></if>
+            <service-call name="mantle.party.CommunicationServices.add#WikiPageComment" in-map="{wikiPageId:wikiPageId, subject:subject, body:body}"/>
+        </actions>
         <default-response url="."/></transition>
 
-    <transition name="addCategory"><service-call name="store#moqui.resource.wiki.WikiPageCategoryMember"/>
+    <transition name="addCategory">
+        <actions>
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiPageId:wikiPageId}" out-map="categoryAccess"/>
+            <if condition="!wikiPageId || !categoryAccess?.canUpdate"><return error="true" message="You may not change the categories of this page"/></if>
+            <service-call name="store#moqui.resource.wiki.WikiPageCategoryMember" in-map="{wikiPageId:wikiPageId,
+                    wikiPageCategoryId:wikiPageCategoryId, fromDate:fromDate, thruDate:thruDate}"/>
+        </actions>
         <default-response url="."/></transition>
-    <transition name="removeCategory"><service-call name="delete#moqui.resource.wiki.WikiPageCategoryMember"/>
+    <transition name="removeCategory">
+        <actions>
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiPageId:wikiPageId}" out-map="categoryAccess"/>
+            <if condition="!wikiPageId || !categoryAccess?.canUpdate"><return error="true" message="You may not change the categories of this page"/></if>
+            <service-call name="delete#moqui.resource.wiki.WikiPageCategoryMember" in-map="{wikiPageId:wikiPageId,
+                    wikiPageCategoryId:wikiPageCategoryId, fromDate:fromDate}"/>
+        </actions>
         <default-response url="."/></transition>
 
     <transition name="getSpacePages">
@@ -64,12 +83,17 @@ along with this software (see the LICENSE.md file). If not, see
         <parameter name="valueUsePath"/>
         <parameter name="includeRoot"/>
         <actions>
+            <!-- the pages of a space the user may view (get#WikiPageAccess); a page by its id only in that space -->
+            <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiSpaceId:wikiSpaceId}" out-map="spaceAccess"/>
+            <if condition="ec.message.hasError() || !wikiSpaceId || !spaceAccess?.canView">
+                <script>ec.message.clearErrors(); ec.web.sendJsonResponse({options:[], pageSize:20, count:0})</script><return/></if>
             <set field="pageIndex" from="pageIndex || 0"/>
             <set field="pageSize" from="pageSize || 20"/>
             <set field="term" from="term || ''"/>
             <set field="valueUsePathBool" from="valueUsePath == 'true'"/>
             <entity-find-one entity-name="moqui.resource.wiki.WikiPage" value-field="wikiPage">
                 <field-map field-name="wikiPageId" from="term"/></entity-find-one>
+            <if condition="wikiPage != null &amp;&amp; wikiPage.wikiSpaceId != wikiSpaceId"><set field="wikiPage" from="null"/></if>
             <if condition="wikiPage == null">
                 <entity-find entity-name="moqui.resource.wiki.WikiPage" list="byPathPageList">
                     <econdition field-name="wikiSpaceId"/>
@@ -109,7 +133,8 @@ along with this software (see the LICENSE.md file). If not, see
         <service-call name="org.moqui.resource.WikiServices.get#WikiPageInfo" out-map="pageInfo"
                 in-map="{wikiSpaceId:wikiSpaceId, pagePath:pagePath, wikiPageId:wikiPageId, versionName:versionName, extraPathNameList:extraPathNameList}"/>
         <!-- no such space, or a page the user may not view: nothing of it is read, and no offer to create it -->
-        <if condition="ec.message.hasError()"><return/></if>
+        <set field="pageRefused" from="ec.message.hasError()"/>
+        <if condition="pageRefused"><return/></if>
 
         <!-- redirect to EditWikiPage to create instead of trying to render a page that doesn't exist -->
         <script><![CDATA[
@@ -138,6 +163,11 @@ along with this software (see the LICENSE.md file). If not, see
                 wikiSpaceId = info.wikiSpaceId
                 pagePath = info.pagePath
                 wikiPageId = info.wikiPageId
+            } else if (pageRefused === true) {
+                // a page refused: nothing of the request's names, so its comments, categories and history are not read
+                wikiSpaceId = null
+                pagePath = null
+                wikiPageId = null
             }
             wikiSpace = info?.wikiSpace ?? null
             wikiPage = info?.wikiPage ?? null
@@ -313,7 +343,7 @@ along with this software (see the LICENSE.md file). If not, see
                 -->
             </box-body></container-box>
 
-            <section name="WikiPageCommentSection" condition="wikiPageId"><widgets>
+            <section name="WikiPageCommentSection" condition="pageFound &amp;&amp; wikiPageId"><widgets>
                 <container-box><box-header title="Comments"/><box-toolbar>
                     <container-dialog id="AddCommentDialog" button-text="Add Comment">
                         <form-single name="AddCommentForm" transition="addComment">
@@ -341,7 +371,7 @@ along with this software (see the LICENSE.md file). If not, see
                             <dynamic-dialog id="ReplyCommentContainer${uniqueExtension}" button-text="Reply" transition="wikiCommentReply">
                                 <parameter name="parentCommEventId" from="commEventDetail.communicationEventId"/></dynamic-dialog>
 
-                            <label text="${commEventDetail.body}" type="pre" encode="false"/>
+                            <label text="${commEventDetail.body}" type="pre"/>
 
                             <section name="ChildNestedComments">
                                 <condition><expression>childCeList?.length</expression></condition>
@@ -376,7 +406,7 @@ along with this software (see the LICENSE.md file). If not, see
                 </widgets></section-iterate>
             </box-body></container-box>
 
-            <section name="CategoriesSection" condition="(wikiPageCategories?.length > 0)"><actions>
+            <section name="CategoriesSection" condition="pageFound &amp;&amp; wikiPageId &amp;&amp; (wikiPageCategories?.length > 0)"><actions>
                 <entity-find entity-name="moqui.resource.wiki.WikiPageCategoryMember" list="membershipList">
                     <econdition field-name="wikiPageId"/></entity-find>
             </actions><widgets>
@@ -408,7 +438,7 @@ along with this software (see the LICENSE.md file). If not, see
                 </box-body></container-box>
             </widgets></section>
 
-            <section name="PageRelatedSection" condition="wikiPageId"><actions>
+            <section name="PageRelatedSection" condition="pageFound &amp;&amp; wikiPageId"><actions>
                 <entity-find entity-name="mantle.request.WikiPageAndRequest" list="wparList">
                     <econdition field-name="wikiPageId"/></entity-find>
 

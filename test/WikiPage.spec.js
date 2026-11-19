@@ -12,6 +12,8 @@ const PAGE_TEXT = "# Spec heading\n\nSpec *markdown* text with {{ 6 * 7 }} and $
 // a component file a request names as the page's location; rendered as a template it would show this text of it
 const COMPONENT_FILE = "component://mr-marble/test/README.md"
 const COMPONENT_TEXT = "repository root with a current build"
+// a comment is text in the qvt template, not a Vue expression or HTML
+const COMMENT = "Spec comment {{ 6 * 7 }} with <b>tags</b>"
 
 function sys(run) {
     const wasDisabled = ec.artifactExecution.disableAuthz()
@@ -37,6 +39,15 @@ spec({
             if (!ec.entity.find("moqui.resource.wiki.WikiSpace").condition("wikiSpaceId", SPACE).one())
                 call("org.moqui.resource.WikiServices.create#WikiSpace", {wikiSpaceId: SPACE, description: "Spec wiki"})
             call("org.moqui.resource.WikiServices.update#WikiPage", {wikiSpaceId: SPACE, pageName: "Page1", pageText: PAGE_TEXT})
+            const page = ec.entity.find("moqui.resource.wiki.WikiPage").condition({wikiSpaceId: SPACE, pagePath: "Page1"}).one()
+            // written as rows: the comment service refuses markup, which a comment that came another way (an import) has
+            if (!ec.entity.find("mantle.party.communication.WikiPageCommunicationEvent").condition("wikiPageId", page.wikiPageId).count()) {
+                ec.entity.makeValue("mantle.party.communication.CommunicationEvent").setAll({communicationEventId: "SPEC_WIKI_COMMENT",
+                    communicationEventTypeId: "Comment", statusId: "CeSent", fromPartyId: "EX_JOHN_DOE", entryDate: ec.user.nowTimestamp,
+                    contentType: "text/plain", subject: "Spec comment", body: COMMENT}).create()
+                ec.entity.makeValue("mantle.party.communication.WikiPageCommunicationEvent")
+                    .setAll({wikiPageId: page.wikiPageId, communicationEventId: "SPEC_WIKI_COMMENT"}).create()
+            }
         })
     }
 })
@@ -57,6 +68,11 @@ feature("the wiki screen shows a page through render#WikiPage, its HTML cleaned 
         // a relative link resolves against the wiki screen's path of this server, not a URL with a host
         /href="\/[^"]*\/wiki\/SPECWTUI\/Page2"/.test(output)
         !output.includes(COMPONENT_TEXT)
+        // the comment's text encoded: no tag of it, and no {{ }} of it the browser's Vue would evaluate
+        output.includes("Spec comment")
+        output.includes("&lt;b&gt;tags&lt;/b&gt;")
+        !output.includes("<b>tags</b>")
+        !output.includes(COMMENT.replace("<b>tags</b>", "&lt;b&gt;tags&lt;/b&gt;"))
     }
 })
 

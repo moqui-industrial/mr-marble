@@ -44,7 +44,8 @@ The regression suite (`test/`):
   values against Java's case-insensitive sales/purchase behavior.
 - `MessageRecipient`: My Account's message with no To party names no recipient ("to null" before).
 - `WikiPage`: a wiki page renders through `render#WikiPage` (its HTML cleaned, not a template, under `v-pre` in qvt),
-  a request's `pageLocation` is ignored, and a markdown page reaches the terminal as one markdown node with its id.
+  a request's `pageLocation` is ignored, a comment's text is encoded, and a markdown page reaches the terminal as one
+  markdown node with its id.
 - `PrintTemplate`: a print screen renders its own template, never a request's `templateLocation`.
 - `MyAccountUpdate`: My Account's `updateUser` changes only the caller's account, whatever `userId`, `userId_0` or
   `username` the post names.
