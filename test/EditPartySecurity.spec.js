@@ -142,6 +142,18 @@ feature("Edit Party's group membership goes through Admin's access rules: a user
 
 // an account's enabling and disabling is an account administrator's: a Party screen user's post, with authorization on,
 // leaves it as it was (SEC-ADM-89; the framework's UserServices ask ADMIN_IDENTITY_MANAGE too once mr-moqui 8c4177a9f is merged)
+feature("a Party screen user without ADMIN_IDENTITY_MANAGE disables no account (SEC-ADM-89)", {
+    when() {
+        const disabled = postAuthorized(PLAIN.toLowerCase(), "disableUserAccount", {userId: PARTY})
+        return {disabled, after: account(PARTY)}
+    },
+    then({disabled, after}) {
+        after.disabled != "Y"
+    }
+})
+
+// a new account's group is given through Admin's access rules too (SEC-ADM-91): a Party screen user makes no account in
+// a group, MarbleErpAdmin among them; an access administrator gives MarbleErpAdmin, a registered bundle, on Add to Group
 feature("a new account's group goes through Admin's access rules; an access administrator adds a user to MarbleErpAdmin (SEC-ADM-91)", {
     when() {
         make("mantle.party.Party", {partyId: "SPEC_EPS_NEW", partyTypeEnumId: "PtyPerson"})

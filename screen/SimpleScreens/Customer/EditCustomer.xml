@@ -46,10 +46,9 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response url="."/></transition>
     <transition name="updateUserAccount"><service-call name="mantle.party.PartyServices.update#PartyUserAccount"/>
         <default-response url="."/></transition>
-    <transition name="enableUserAccount"><service-call name="org.moqui.impl.UserServices.enable#UserAccount"/>
-        <default-response url="."/></transition>
-    <transition name="disableUserAccount"><service-call name="org.moqui.impl.UserServices.disable#UserAccount"/>
-        <default-response url="."/></transition>
+    <!-- an account administrator's, as Edit Party's (SEC-ADM-89) -->
+    <transition-include name="enableUserAccount" location="component://mr-marble/screen/SimpleScreens/Party/EditParty.xml"/>
+    <transition-include name="disableUserAccount" location="component://mr-marble/screen/SimpleScreens/Party/EditParty.xml"/>
     <transition name="resetPassword"><service-call name="org.moqui.impl.UserServices.reset#Password"/>
         <default-response url="."/></transition>
 

@@ -70,10 +70,16 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response url="."/></transition>
     <transition name="updateUserAccount"><service-call name="mantle.party.PartyServices.update#PartyUserAccount"/>
         <default-response url="."/></transition>
-    <transition name="enableUserAccount"><service-call name="org.moqui.impl.UserServices.enable#UserAccount"/>
-        <default-response url="."/></transition>
-    <transition name="disableUserAccount"><service-call name="org.moqui.impl.UserServices.disable#UserAccount"/>
-        <default-response url="."/></transition>
+    <!-- enabling or disabling an account is an account administrator's (ADMIN_IDENTITY_MANAGE), as the framework's
+        UserServices ask too; EditCustomer includes these (SEC-ADM-89) -->
+    <transition name="enableUserAccount">
+        <condition><expression>ec.user.hasPermission('ADMIN_IDENTITY_MANAGE')</expression></condition>
+        <service-call name="org.moqui.impl.UserServices.enable#UserAccount"/>
+        <default-response url="."/><error-response url="."/></transition>
+    <transition name="disableUserAccount">
+        <condition><expression>ec.user.hasPermission('ADMIN_IDENTITY_MANAGE')</expression></condition>
+        <service-call name="org.moqui.impl.UserServices.disable#UserAccount"/>
+        <default-response url="."/><error-response url="."/></transition>
     <transition name="resetPassword"><service-call name="org.moqui.impl.UserServices.reset#Password"/>
         <default-response url="."/></transition>
     <!-- a membership is given and ended through Admin's access rules (org.moqui.admin.AccessServices store#Membership and
