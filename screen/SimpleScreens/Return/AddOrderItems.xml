@@ -27,7 +27,10 @@ along with this software (see the LICENSE.md file). If not, see
         <entity-find-one entity-name="mantle.order.return.ReturnHeader" value-field="returnHeader"/>
         <if condition="returnHeader == null"><return error="true" message="Return not found with ID ${returnId}"/></if>
 
-        <set field="returnChangeable" from="['ReturnCreated', 'ReturnRequested', 'ReturnApproved'].includes(returnHeader.statusId)"/>
+        <!-- an item added to an approved return is born approved: only a return authorizer adds one (Mantle's
+            add#OrderItemToReturn refuses anyone else, SEC-BAP-93) -->
+        <set field="returnChangeable" from="['ReturnCreated', 'ReturnRequested'].includes(returnHeader.statusId)
+                || (returnHeader.statusId == 'ReturnApproved' &amp;&amp; ec.user.hasPermission('RETURN_AUTHORIZE'))"/>
         <if condition="returnChangeable">
             <service-call name="mantle.order.ReturnServices.find#ReturnableOrderItems" out-map="context"
                     in-map="{returnId:returnId, lookBackDays:lookBackDays}"/>
