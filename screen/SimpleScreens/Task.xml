@@ -16,6 +16,18 @@ along with this software (see the LICENSE.md file). If not, see
         default-menu-title="Tasks" default-menu-index="4" menu-image="/ssstatic/images/task-homework.png">
 
     <subscreens default-item="FindTask"/>
+    <!-- a task kept from the user inside their organizations (a protected People task, a confidential Smithy issue's, a
+        maintenance work order outside their Maintenance reach) is not available here, by Mantle's rule for each search hit
+        (SearchScope.js hitHidden; SEC-DAT-98): on every render and transition of its screens, as a missing one -->
+    <always-actions>
+        <if condition="workEffortId">
+            <entity-find-one entity-name="mantle.work.effort.WorkEffort" value-field="scopedTask" auto-field-map="false">
+                <field-map field-name="workEffortId"/></entity-find-one>
+            <if condition="scopedTask != null &amp;&amp; ec.resource.script('component://mr-mantle/service/mantle/search/SearchScope.js')
+                    .hitHidden('MantleTask', scopedTask, ec.user.userAccount?.partyId || null)">
+                <return error="true" message="RECORD_UNAVAILABLE: Task ${workEffortId} is not available"/></if>
+        </if>
+    </always-actions>
 
     <actions>
         <if condition="workEffortId">
