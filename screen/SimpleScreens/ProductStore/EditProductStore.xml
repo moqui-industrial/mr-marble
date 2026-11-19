@@ -33,10 +33,11 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="deleteShippingOption"><service-call name="delete#mantle.product.store.ProductStoreShipOption"/>
         <default-response url="."/></transition>
 
-    <transition name="createShippingGateway"><service-call name="create#mantle.product.store.ProductStoreShippingGateway"/>
-        <default-response url="."/></transition>
-    <transition name="updateShippingGateway"><service-call name="update#mantle.product.store.ProductStoreShippingGateway"/>
-        <default-response url="."/></transition>
+    <!-- a store binds only a gateway its organizations configure (Mantle store#StoreShippingGateway, SEC-BAP-101) -->
+    <transition name="createShippingGateway"><service-call name="mantle.shipment.carrier.CarrierSetupServices.store#StoreShippingGateway"/>
+        <default-response url="."/><error-response url="."/></transition>
+    <transition name="updateShippingGateway"><service-call name="mantle.shipment.carrier.CarrierSetupServices.store#StoreShippingGateway"/>
+        <default-response url="."/><error-response url="."/></transition>
     <transition name="deleteShippingGateway"><service-call name="delete#mantle.product.store.ProductStoreShippingGateway"/>
         <default-response url="."/></transition>
 
@@ -245,6 +246,12 @@ along with this software (see the LICENSE.md file). If not, see
             </section>
 
             <section name="ShippingGatewaysSection">
+                <actions>
+                    <entity-find entity-name="mantle.shipment.carrier.ShippingGatewayConfig" list="allGatewayList">
+                        <order-by field-name="shippingGatewayConfigId"/></entity-find>
+                    <set field="managedGatewayList" from="Array.from(allGatewayList).filter((row) =&gt; ec.resource
+                            .script('component://mr-mantle/service/mantle/shipment/Shipping.js').gatewayManaged(row.shippingGatewayConfigId))"/>
+                </actions>
                 <widgets>
                     <container-box>
                         <box-header title="Shipping Gateways"/>
@@ -258,12 +265,10 @@ along with this software (see the LICENSE.md file). If not, see
                                         <order-by field-name="organizationName"/>
                                     </entity-find></entity-options></drop-down>
                                 </default-field></field>
+                                <!-- only the gateways the user's organizations configure (Mantle Shipping.js gatewayManaged) -->
                                 <field name="shippingGatewayConfigId"><default-field title="Gateway Config">
-                                    <drop-down><entity-options key="${shippingGatewayConfigId}" text="${description || ''} [${shippingGatewayConfigId}]">
-                                        <entity-find entity-name="mantle.shipment.carrier.ShippingGatewayConfig">
-                                            <order-by field-name="shippingGatewayConfigId"/>
-                                        </entity-find>
-                                    </entity-options></drop-down>
+                                    <drop-down><list-options list="managedGatewayList" key="${shippingGatewayConfigId}"
+                                            text="${description || ''} [${shippingGatewayConfigId}]"/></drop-down>
                                 </default-field></field>
 
                                 <field name="billingType"><default-field><drop-down allow-empty="true">
