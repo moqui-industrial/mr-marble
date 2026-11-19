@@ -18,9 +18,10 @@ along with this software (see the LICENSE.md file). If not, see
 
     <parameter name="partyId" required="true"/>
 
-    <transition name="addUserAssign"><service-call name="create#WorkEffortParty" in-map="context"/>
+    <!-- a party is put on a task only that the user's organizations' rules admit (SEC-DAT-98) -->
+    <transition name="addUserAssign"><condition><expression>!ec.resource.script('component://mr-marble/template/party/RecordScope.js').taskHidden(workEffortId)</expression></condition><service-call name="create#WorkEffortParty" in-map="context"/>
         <default-response url="."/></transition>
-    <transition name="updateUserAssign"><service-call name="update#WorkEffortParty" in-map="context"/>
+    <transition name="updateUserAssign"><condition><expression>!ec.resource.script('component://mr-marble/template/party/RecordScope.js').taskHidden(workEffortId)</expression></condition><service-call name="update#WorkEffortParty" in-map="context"/>
         <default-response url="."/></transition>
 
     <transition name="editTask"><default-response url="//${appRoot}/Task/TaskSummary"/></transition>

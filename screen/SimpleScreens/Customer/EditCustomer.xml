@@ -16,6 +16,12 @@ along with this software (see the LICENSE.md file). If not, see
         default-menu-title="Customer" default-menu-index="1">
 
     <parameter name="partyId" required="true"/>
+    <!-- a person who is only an applicant the user does not recruit is not available here, by Mantle's rule inside the
+        user's organizations (template/party/RecordScope.js, SEC-DAT-98), on every render and transition -->
+    <always-actions>
+        <if condition="ec.resource.script('component://mr-marble/template/party/RecordScope.js').partyHidden(partyId)">
+            <return error="true" message="RECORD_UNAVAILABLE: Party ${partyId} is not available"/></if>
+    </always-actions>
 
     <transition name="findOrder"><default-response url="//${appRoot}/Order/FindOrder"/></transition>
     <transition name="findShipment"><default-response url="//${appRoot}/Shipment/FindShipment"/></transition>
