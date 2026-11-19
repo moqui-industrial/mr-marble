@@ -52,6 +52,8 @@ The regression suite (`test/`):
 - `MyAccountUpdate`: My Account's `updateUser` changes only the caller's account, whatever `userId`, `userId_0` or
   `username` the post names.
 - `CreateDialogValues`: New Request's initial status and New Product's name are not taken from the find's parameters.
+- `ProductContentLocation`: Catalog's New by Location makes a product content row through Mantle's
+  `create#ProductContent`, so a description outside the product's content folder is refused; an image by URL is made.
 - `ScreenReport`: lists every screen with whether a sweep, a targeted spec or the browser smoke reaches it, and its
   companion files; ignored unless `mrss_screen_report` names the file. The checklist in `../MIGRATION-STATUS.md` is
   ticked by hand.
