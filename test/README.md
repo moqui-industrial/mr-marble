@@ -46,6 +46,8 @@ The regression suite (`test/`):
 - `WikiPage`: a wiki page renders through `render#WikiPage` (its HTML cleaned, not a template, under `v-pre` in qvt),
   a request's `pageLocation` is ignored, and a markdown page reaches the terminal as one markdown node with its id.
 - `PrintTemplate`: a print screen renders its own template, never a request's `templateLocation`.
+- `MyAccountUpdate`: My Account's `updateUser` changes only the caller's account, whatever `userId`, `userId_0` or
+  `username` the post names.
 - `CreateDialogValues`: New Request's initial status and New Product's name are not taken from the find's parameters.
 - `ScreenReport`: lists every screen with whether a sweep, a targeted spec or the browser smoke reaches it, and its
   companion files; ignored unless `mrss_screen_report` names the file. The checklist in `../MIGRATION-STATUS.md` is

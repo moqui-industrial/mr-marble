@@ -19,27 +19,39 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="invoiceId" required="true"/>
     <parameter name="invoiceId_0"/>
 
+    <!-- the user's own expense invoice, for the page and for each transition: pre-actions do not run for a transition, so
+        a check there let a post change anyone's invoice items. The invoiceId set here is pinned: a multi post's rows
+        (invoiceId_1, ...) do not replace it (plans/Security-Review.md SEC-RTE-81). -->
+    <always-actions>
+        <set field="partyId" from="ec.user.userAccount?.partyId"/>
+        <set field="invoiceId" from="invoiceId || invoiceId_0"/>
+        <entity-find-one entity-name="mantle.account.invoice.Invoice" value-field="invoice"/>
+        <if condition="invoice == null || !partyId || invoice.fromPartyId != partyId">
+            <script>throw new Error(`You may not view or edit Invoice #${invoiceId}`)</script>
+        </if>
+    </always-actions>
+
+    <!-- items are added and deleted only while the invoice is incoming, as the screen offers, with only the fields of its forms -->
     <transition name="createInvoiceItem">
-        <service-call name="create#mantle.account.invoice.InvoiceItem" in-map="context"/>
+        <actions>
+            <if condition="invoice.statusId != 'InvoiceIncoming'"><return error="true" message="Invoice #${invoiceId} is no longer open for changes"/></if>
+            <service-call name="create#mantle.account.invoice.InvoiceItem" in-map="{invoiceId:invoiceId, itemTypeEnumId:itemTypeEnumId,
+                    description:description, itemDate:itemDate, quantity:quantity, amount:amount}"/>
+        </actions>
         <default-response url="."/>
     </transition>
+    <!-- the multi form's rows: each takes only the form's fields, and the invoice pinned above -->
     <transition name="updateInvoiceItem">
         <service-call name="update#mantle.account.invoice.InvoiceItem" in-map="context"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteInvoiceItem">
-        <service-call name="delete#mantle.account.invoice.InvoiceItem" in-map="context"/>
+        <actions>
+            <if condition="invoice.statusId != 'InvoiceIncoming'"><return error="true" message="Invoice #${invoiceId} is no longer open for changes"/></if>
+            <service-call name="delete#mantle.account.invoice.InvoiceItem" in-map="{invoiceId:invoiceId, invoiceItemSeqId:invoiceItemSeqId}"/>
+        </actions>
         <default-response url="."/>
     </transition>
-
-    <pre-actions>
-        <set field="partyId" from="ec.user.userAccount.partyId"/>
-        <set field="invoiceId" from="invoiceId || invoiceId_0"/>
-        <entity-find-one entity-name="mantle.account.invoice.Invoice" value-field="invoice"/>
-        <if condition="invoice.fromPartyId != partyId">
-            <script>throw new Error(`You may not view or edit Invoice #${invoiceId}`)</script>
-        </if>
-    </pre-actions>
     <actions>
         <service-call name="mantle.account.InvoiceServices.get#InvoiceTotal" in-map="{invoiceId:invoiceId}" out-map="context"/>
         <entity-find entity-name="mantle.account.invoice.InvoiceItem" list="invoiceItemList">

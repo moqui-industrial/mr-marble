@@ -21,29 +21,40 @@ along with this software (see the LICENSE.md file). If not, see
         <set field="userId" from="ec.user.userId"/>
     </always-actions>
 
-    <transition name="updateUser"><service-call name="mantle.party.PartyServices.update#Account" in-map="context"/>
+    <!-- Each transition names the user's own account and only the fields of its form, never the request's whole context:
+        a posted userId, a username, disabled or requirePasswordChange does not reach the service, nor does a multi post's
+        userId_0 (plans/Security-Review.md SEC-RTE-81). The username is not changed here: too easy to fish for others. -->
+    <transition name="updateUser"><service-call name="mantle.party.PartyServices.update#Account" in-map="{userId:ec.user.userId,
+            partyId:ec.user.userAccount?.partyId, firstName:firstName, middleName:middleName, lastName:lastName,
+            emailAddress:emailAddress, locale:locale, timeZone:timeZone}"/>
         <default-response url="."/></transition>
-    <transition name="changePassword"><service-call name="org.moqui.impl.UserServices.update#Password"/>
+    <transition name="changePassword"><service-call name="org.moqui.impl.UserServices.update#Password" in-map="{userId:ec.user.userId,
+            oldPassword:oldPassword, newPassword:newPassword, newPasswordVerify:newPasswordVerify, code:code}"/>
         <default-response url="."/><error-response url="."/></transition>
 
-    <transition name="createUserAuthcFactorTotp"><service-call name="org.moqui.impl.UserServices.create#UserAuthcFactorTotp"/>
+    <transition name="createUserAuthcFactorTotp"><service-call name="org.moqui.impl.UserServices.create#UserAuthcFactorTotp"
+            in-map="{userId:ec.user.userId, thruDate:thruDate}"/>
         <default-response url="."/></transition>
     <!-- the framework's check of a code against the user's own factors, which marks an authenticator verified (the Verify
         dialog's VerifyTotp of the tools app does the same); there is no verify#UserAuthcFactorTotp -->
     <transition name="verifyUserAuthcFactorTotp">
-        <service-call name="org.moqui.impl.UserServices.validate#UserAuthcFactorCode" in-map="{userId:userId, code:code}" out-map="context"/>
+        <service-call name="org.moqui.impl.UserServices.validate#UserAuthcFactorCode" in-map="{userId:ec.user.userId, code:code}" out-map="context"/>
         <actions><if condition="!verified"><message error="true">Authentication code is not valid</message></if></actions>
         <default-response url="."/><error-response url="."/></transition>
     <transition name="createUserAuthcFactorSingleUse">
-        <service-call name="org.moqui.impl.UserServices.create#SingleUseAuthcCodes"/>
+        <service-call name="org.moqui.impl.UserServices.create#SingleUseAuthcCodes"
+                in-map="{userId:ec.user.userId, thruDate:thruDate, numberOfCodes:numberOfCodes}"/>
         <actions><!-- session attributes are text: keep the list as JSON -->
         <script>ec.web.sessionAttributes.singleUseCodes = JSON.stringify(singleUseCodes)</script></actions>
         <default-response url="."/></transition>
-    <transition name="createUserAuthcFactorEmail"><service-call name="org.moqui.impl.UserServices.create#UserAuthcFactorEmail"/>
+    <transition name="createUserAuthcFactorEmail"><service-call name="org.moqui.impl.UserServices.create#UserAuthcFactorEmail"
+            in-map="{userId:ec.user.userId, thruDate:thruDate, factorOption:factorOption}"/>
         <default-response url="."/></transition>
-    <transition name="createUserAuthcFactorSms"><service-call name="org.moqui.impl.UserServices.create#UserAuthcFactorSms"/>
+    <transition name="createUserAuthcFactorSms"><service-call name="org.moqui.impl.UserServices.create#UserAuthcFactorSms"
+            in-map="{userId:ec.user.userId, thruDate:thruDate, factorOption:factorOption}"/>
         <default-response url="."/></transition>
-    <transition name="factorSubmit"><service-call name="org.moqui.impl.UserServices.invalidate#UserAuthcFactorEntry" in-map="context"/>
+    <transition name="factorSubmit"><service-call name="org.moqui.impl.UserServices.invalidate#UserAuthcFactorEntry"
+            in-map="{userId:ec.user.userId, factorId:factorId}"/>
         <default-response url="."/></transition>
     <transition name="sendOtp">
         <service-call name="org.moqui.impl.UserServices.send#ExternalAuthcCode" in-map="{factorId:factorId}"/>
