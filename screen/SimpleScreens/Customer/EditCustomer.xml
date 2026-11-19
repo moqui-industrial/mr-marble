@@ -37,12 +37,10 @@ along with this software (see the LICENSE.md file). If not, see
     <transition-include name="deletePartySetting" location="component://mr-marble/screen/SimpleScreens/Party/EditParty.xml"/>
     <transition-include name="getPartySettingList" location="component://mr-marble/screen/SimpleScreens/Party/EditParty.xml"/>
 
-    <transition name="createPartyIdentification"><service-call name="create#mantle.party.PartyIdentification"/>
-        <default-response url="."/></transition>
-    <transition name="updatePartyIdentification"><service-call name="update#mantle.party.PartyIdentification"/>
-        <default-response url="."/></transition>
-    <transition name="deletePartyIdentification"><parameter name="partyIdTypeEnumId"/>
-        <service-call name="delete#mantle.party.PartyIdentification"/><default-response url="."/></transition>
+    <!-- the identifications' rule is EditParty's (SEC-BAP-140) -->
+    <transition-include name="createPartyIdentification" location="component://mr-marble/screen/SimpleScreens/Party/EditParty.xml"/>
+    <transition-include name="updatePartyIdentification" location="component://mr-marble/screen/SimpleScreens/Party/EditParty.xml"/>
+    <transition-include name="deletePartyIdentification" location="component://mr-marble/screen/SimpleScreens/Party/EditParty.xml"/>
 
     <transition name="createUserAccount"><service-call name="mantle.party.PartyServices.create#PartyUserAccount"/>
         <default-response url="."/></transition>
