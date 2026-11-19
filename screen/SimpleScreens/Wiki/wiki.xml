@@ -181,9 +181,7 @@ along with this software (see the LICENSE.md file). If not, see
             breadcrumbMapList = info?.breadcrumbMapList ?? []
             // a space's public URLs are patterns: a ${name} in one takes a value of the page as text, never an expression
             // run as a template (a stored text is not script, SEC-SCR-81)
-            const fill = (pattern, values) => String(pattern || '').replace(/\$\{\s*(\w+)\s*\}/g, (match, name) =>
-                    name === 'pagePath' ? String(values.pagePath || '').split('/').map((part) => encodeURIComponent(part)).join('/') :
-                    encodeURIComponent(String(values[name] ?? '')))
+            const fill = ec.resource.script('component://mr-mantle/service/mantle/other/PublicUrlPattern.js').fill
             const pageValues = {wikiSpaceId, pagePath, wikiPageId, pageName, versionName}
             publicPageLink = wikiSpace?.publicPageUrl ? fill(wikiSpace.publicPageUrl, pageValues) : null
             attachmentList = Array.from(info?.attachmentList ?? []).map((attachment) => ({filename: attachment.filename,

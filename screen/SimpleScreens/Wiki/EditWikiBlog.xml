@@ -41,7 +41,7 @@ along with this software (see the LICENSE.md file). If not, see
             <field-map field-name="wikiPageId" from="wikiBlog.wikiPageId"/></entity-find-one>
         <set field="wikiSpaceId" from="wikiPage?.wikiSpaceId"/>
         <entity-find-one entity-name="moqui.resource.wiki.WikiSpace" value-field="wikiSpace" cache="true"/>
-        <set field="publicBlogLink" from="wikiSpace?.publicBlogUrl ? String(wikiSpace.publicBlogUrl).replace(/\$\{\s*(\w+)\s*\}/g, (match, name) => name === 'pagePath' ? String(wikiPage?.pagePath || '').split('/').map(encodeURIComponent).join('/') : encodeURIComponent(String(({wikiSpaceId:wikiSpaceId, wikiPageId:wikiPage?.wikiPageId, wikiBlogId:wikiBlog?.wikiBlogId})[name] ?? ''))) : null"/>
+        <set field="publicBlogLink" from="wikiSpace?.publicBlogUrl ? ec.resource.script('component://mr-mantle/service/mantle/other/PublicUrlPattern.js').fill(wikiSpace.publicBlogUrl, {pagePath:wikiPage?.pagePath, wikiSpaceId:wikiSpaceId, wikiPageId:wikiPage?.wikiPageId, wikiBlogId:wikiBlog?.wikiBlogId}) : null"/>
 
         <entity-find entity-name="moqui.resource.wiki.WikiPageCategory" list="wikiPageCategories">
             <order-by field-name="categoryName"/></entity-find>

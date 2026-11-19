@@ -38,6 +38,9 @@ spec({
         sys(() => {
             if (!ec.entity.find("moqui.resource.wiki.WikiSpace").condition("wikiSpaceId", SPACE).one())
                 call("org.moqui.resource.WikiServices.create#WikiSpace", {wikiSpaceId: SPACE, description: "Spec wiki"})
+            // a public address whose ${} names are filled as text: a page value, a name with none, an expression
+            call("update#moqui.resource.wiki.WikiSpace", {wikiSpaceId: SPACE,
+                publicPageUrl: "https://help.example.com/${pagePath}?c=${constructor}&u=${ec.user.username}"})
             call("org.moqui.resource.WikiServices.update#WikiPage", {wikiSpaceId: SPACE, pageName: "Page1", pageText: PAGE_TEXT})
             const page = ec.entity.find("moqui.resource.wiki.WikiPage").condition({wikiSpaceId: SPACE, pagePath: "Page1"}).one()
             // written as rows: the comment service refuses markup, which a comment that came another way (an import) has
@@ -73,6 +76,8 @@ feature("the wiki screen shows a page through render#WikiPage, its HTML cleaned 
         output.includes("&lt;b&gt;tags&lt;/b&gt;")
         !output.includes("<b>tags</b>")
         !output.includes(COMMENT.replace("<b>tags</b>", "&lt;b&gt;tags&lt;/b&gt;"))
+        // the public link: Mantle's fill (PublicUrlPattern.js), no value for a name the page has not
+        output.includes("https://help.example.com/Page1?c=&amp;u=${ec.user.username}") || output.includes("https://help.example.com/Page1?c=&u=${ec.user.username}")
     }
 })
 
