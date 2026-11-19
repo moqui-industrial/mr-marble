@@ -111,3 +111,55 @@ feature("an HR case is in no request list, is not opened or changed, and no one 
         orderName == "SPECRSS boiler repair"
     }
 })
+
+// the lists of a party's requests and tasks, the Add to Request choices, a milestone's tasks and the task autocomplete leave
+// out a record kept from the user, as Find Request and Find Task do (review); the project's task tree by its nodes' read
+feature("an HR case and a hidden work order are in no Party tab, Add to Request choice, project or milestone list or task autocomplete (SEC-DAT-98)", {
+    when() {
+        const now = ec.user.nowTimestamp
+        make("mantle.work.effort.WorkEffort", {workEffortId: "SPEC_RSS_PROJ", workEffortTypeEnumId: "WetProject", statusId: "WeInProgress",
+            workEffortName: "SPECRSS project"})
+        make("mantle.work.effort.WorkEffort", {workEffortId: "SPEC_RSS_MS", workEffortTypeEnumId: "WetMilestone", statusId: "WeInProgress",
+            rootWorkEffortId: "SPEC_RSS_PROJ", workEffortName: "SPECRSS milestone"})
+        make("mantle.work.effort.WorkEffort", {workEffortId: "SPEC_RSS_WO2", workEffortTypeEnumId: "WetTask", statusId: "WeApproved",
+            rootWorkEffortId: "SPEC_RSS_PROJ", purposeEnumId: "WepGoal", workEffortName: "SPECRSS furnace repair"})
+        // a task is a maintenance work order's by its root (MaintenanceAccess.js workHidden)
+        make("mantle.work.maintenance.MaintenanceWorkOrder", {workEffortId: "SPEC_RSS_PROJ"})
+        make("mantle.work.effort.WorkEffortAssoc", {workEffortId: "SPEC_RSS_MS", toWorkEffortId: "SPEC_RSS_WO2",
+            workEffortAssocTypeEnumId: "WeatMilestone", fromDate: now})
+        // another person on both: the user looking at that person's tabs sees neither
+        make("mantle.party.Party", {partyId: "SPEC_RSS_OTHER", partyTypeEnumId: "PtyPerson"})
+        make("mantle.party.Person", {partyId: "SPEC_RSS_OTHER", firstName: "Spec", lastName: "Other"})
+        make("mantle.request.RequestParty", {requestId: HR_CASE, partyId: "SPEC_RSS_OTHER", roleTypeId: "Watcher", fromDate: now})
+        make("mantle.work.effort.WorkEffortParty", {workEffortId: "SPEC_RSS_WO2", partyId: "SPEC_RSS_OTHER", roleTypeId: "Assignee",
+            statusId: "WeptAssigned", fromDate: now})
+        const render = (path, parameters) => {
+            login("spec.rss.plain")
+            try {
+                const out = sys(() => ec.screen.makeTest().rootScreen(root).renderMode("html").render(path, parameters, null))
+                const errors = Array.from(out.errorMessages || []).join(" | ")
+                ec.message.clearErrors()
+                return {output: String(out.output || ""), errors}
+            } finally {
+                login("john.doe")
+            }
+        }
+        return {
+            requests: render("Party/PartyRequests", {partyId: "SPEC_RSS_OTHER"}),
+            tasks: render("Party/PartyTasks", {partyId: "SPEC_RSS_OTHER"}),
+            project: render("Project/ProjectSummary/actions/TaskTree", {rootWorkEffortId: "SPEC_RSS_PROJ", treeNodeId: "#"}),
+            milestone: render("Project/MilestoneSummary", {milestoneWorkEffortId: "SPEC_RSS_MS"}),
+            autocomplete: render("Task/FindTask/getTaskList", {term: "SPEC_RSS_WO2"})
+        }
+    },
+    then({requests, tasks, project, milestone, autocomplete}) {
+        requests.errors == "" && tasks.errors == "" && milestone.errors == ""
+        !requests.output.includes("SPECRSS harassment complaint")
+        !requests.output.includes("SPECRSS pump leak")
+        !tasks.output.includes("SPECRSS furnace repair")
+        !project.output.includes("SPECRSS furnace repair")
+        milestone.output.includes("SPECRSS milestone")
+        !milestone.output.includes("SPECRSS furnace repair")
+        !autocomplete.output.includes("SPECRSS furnace repair")
+    }
+})

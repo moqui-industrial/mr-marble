@@ -39,6 +39,9 @@ along with this software (see the LICENSE.md file). If not, see
             <econdition field-name="partyId"/>
             <econdition field-name="workEffortTypeEnumId" value="WetTask"/>
         </entity-find>
+        <!-- a task kept from the user inside their organizations is not listed (template/party/RecordScope.js, SEC-DAT-98) -->
+        <set field="recordScope" from="ec.resource.script('component://mr-marble/template/party/RecordScope.js')"/>
+        <set field="weapList" from="Array.from(weapList).filter((row) =&gt; !recordScope.taskHidden(row.workEffortId))"/>
         <entity-find entity-name="mantle.work.effort.WorkEffortAndParty" list="myProjectList">
             <date-filter/>
             <econdition field-name="partyId"/>

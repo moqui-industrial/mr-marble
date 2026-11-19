@@ -10,7 +10,8 @@ function hidden(documentId, id) {
     if (!id) return false
     const memo = ec.context.get("recordScopeMemo") || {}
     if (!ec.context.get("recordScopeMemo")) ec.context.put("recordScopeMemo", memo)
-    const key = documentId + ":" + id
+    // kept by user too: the user can change within one context (a sign-in, a test's login)
+    const key = (ec.user.userId || "") + "|" + documentId + ":" + id
     if (key in memo) return memo[key]
     const [entity, field] = entities[documentId]
     const wasDisabled = ec.artifactExecution.disableAuthz()

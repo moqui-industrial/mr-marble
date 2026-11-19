@@ -106,7 +106,7 @@ along with this software (see the LICENSE.md file). If not, see
             <entity-find-one entity-name="mantle.work.effort.WorkEffort" value-field="workEffort">
                 <field-map field-name="workEffortId" from="term"/></entity-find-one>
 
-            <if condition="workEffort"><then>
+            <if condition="workEffort &amp;&amp; !ec.resource.script('component://mr-marble/template/party/RecordScope.js').taskHidden(workEffort.workEffortId)"><then>
                 <script>
                     ec.web.sendJsonResponse([{value:workEffort.workEffortId, label:ec.resource.expand("WorkEffortNameTemplate", "", workEffort)}])
                 </script>
@@ -118,8 +118,10 @@ along with this software (see the LICENSE.md file). If not, see
                     ]]></script>
                 <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
                         in-map="{queryString:termText, indexName:indexName, documentType:documentType}"/>
+                <!-- a task kept from the user inside their organizations is no choice (template/party/RecordScope.js, SEC-DAT-98) -->
                 <script>
-                    ec.web.sendJsonResponse((documentList ?? []).map(document => ({value:document._id,
+                    const recordScope = ec.resource.script('component://mr-marble/template/party/RecordScope.js')
+                    ec.web.sendJsonResponse((documentList ?? []).filter(document => !recordScope.taskHidden(document._id)).map(document => ({value:document._id,
                         label:ec.resource.expand("WorkEffortNameTemplate", "", {workEffortName:document.name, workEffortId:document._id})})))
                 </script>
             </else></if>
