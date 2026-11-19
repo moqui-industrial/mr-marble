@@ -76,10 +76,27 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response url="."/></transition>
     <transition name="resetPassword"><service-call name="org.moqui.impl.UserServices.reset#Password"/>
         <default-response url="."/></transition>
-    <transition name="createUserGroupMember"><service-call name="create#moqui.security.UserGroupMember"/>
-        <default-response url="."/></transition>
-    <transition name="updateUserGroupMember"><service-call name="update#moqui.security.UserGroupMember"/>
-        <default-response url="."/></transition>
+    <!-- a membership is given and ended through Admin's access rules (org.moqui.admin.AccessServices store#Membership and
+        end#Membership: ADMIN_ACCESS_MANAGE, registered bundles, privileged and sealed groups, never the actor's own account),
+        never by a write of the UserGroupMember row (SEC-ADM-91) -->
+    <transition name="createUserGroupMember"><actions>
+        <service-call name="org.moqui.admin.AccessServices.store#Membership" out-map="membership"
+                in-map="{userGroupId:userGroupId, userId:userId, reason:'Added on Edit Party'}"/>
+        <if condition="!membership?.applied">
+            <return error="true" message="${membership?.reasonCode || 'REFUSED'}: ${membership?.reason || 'The membership was not given'}"/></if>
+    </actions><default-response url="."/><error-response url="."/></transition>
+    <transition name="updateUserGroupMember"><actions>
+        <entity-find-one entity-name="moqui.security.UserGroupMember" value-field="memberRow" auto-field-map="false">
+            <field-map field-name="userGroupId"/><field-map field-name="userId"/><field-map field-name="fromDate"/></entity-find-one>
+        <if condition="memberRow == null"><return error="true" message="RECORD_UNAVAILABLE: No such membership"/></if>
+        <script>membershipRevision = String(memberRow.lastUpdatedStamp instanceof Date ? memberRow.lastUpdatedStamp.getTime()
+                : /^-?\d+$/.test(String(memberRow.lastUpdatedStamp)) ? Number(memberRow.lastUpdatedStamp) : Date.parse(String(memberRow.lastUpdatedStamp)))</script>
+        <service-call name="org.moqui.admin.AccessServices.end#Membership" out-map="membership"
+                in-map="{userGroupId:userGroupId, userId:userId, fromDate:memberRow.fromDate, expectedRevision:membershipRevision,
+                    reason:'Removed on Edit Party'}"/>
+        <if condition="!membership?.applied">
+            <return error="true" message="${membership?.reasonCode || 'REFUSED'}: ${membership?.reason || 'The membership was not ended'}"/></if>
+    </actions><default-response url="."/><error-response url="."/></transition>
 
     <transition name="createPartyRelationship"><service-call name="create#mantle.party.PartyRelationship"/>
         <default-response url="."/></transition>

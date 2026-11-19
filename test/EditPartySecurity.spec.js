@@ -96,3 +96,20 @@ feature("Edit Party shows identifications masked and no tax one; only a receivab
         ssn.idValue == SSN
     }
 })
+
+// a security group membership is given and ended through Admin's access rules (store#Membership, end#Membership), never a
+// write of the row (SEC-ADM-91): a Party screen user adds no account to a group, their own included
+feature("Edit Party's group membership goes through Admin's access rules: a user without ADMIN_ACCESS_MANAGE adds no account to a group (SEC-ADM-91)", {
+    when() {
+        make("moqui.security.UserGroup", {userGroupId: "SPEC_EPS_GROUP", description: "Spec unprivileged group"})
+        const own = post(PLAIN.toLowerCase(), "createUserGroupMember", {partyId: PLAIN, userId: PLAIN, userGroupId: "SPEC_EPS_GROUP"})
+        const other = post(PLAIN.toLowerCase(), "createUserGroupMember", {partyId: PARTY, userId: PARTY, userGroupId: "SPEC_EPS_GROUP"})
+        const members = sys(() => ec.entity.find("moqui.security.UserGroupMember").condition("userGroupId", "SPEC_EPS_GROUP").count())
+        return {own, other, members}
+    },
+    then({own, other, members}) {
+        own.includes("ADMIN_ACCESS_MANAGE")
+        other.includes("ADMIN_ACCESS_MANAGE")
+        members == 0
+    }
+})
