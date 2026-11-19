@@ -53,7 +53,7 @@ The regression suite (`test/`):
   `username` the post names.
 - `CreateDialogValues`: New Request's initial status and New Product's name are not taken from the find's parameters.
 - `LookupDocumentType`: the party and product lookups search the app's own party and product documents, whatever
-  `documentType` a request names.
+  `documentType` a request names; Quick Search (html) offers no message or wiki page type.
 - `ProductContentLocation`: Catalog's New by Location makes a product content row through Mantle's
   `create#ProductContent`, so a description outside the product's content folder is refused; an image by URL is made.
 - `ScreenReport`: lists every screen with whether a sweep, a targeted spec or the browser smoke reaches it, and its

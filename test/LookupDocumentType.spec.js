@@ -55,3 +55,20 @@ feature("a party lookup answers parties and a product lookup products, whatever 
         productsAsParties.every(option => exists("mantle.product.Product", {productId: option.value}))
     }
 })
+
+// Quick Search's type choice is the types the general search takes (SEC-DAT-81): no messages or wiki pages. Its one
+// render in the regression suite, html.
+feature("Quick Search offers the general search's types, not messages or wiki pages", {
+    when() {
+        login("john.doe")
+        const out = ec.screen.makeTest().rootScreen(webroot).renderMode("html").render("apps/marble/QuickSearch", {}, "get")
+        ec.message.clearErrors()
+        return {status: out.status, output: String(out.output || "")}
+    },
+    then({output}) {
+        !output.includes("Error rendering") && !output.includes("Exception in render")
+        output.includes('value="MantleParty"')
+        !output.includes('value="MantleCommunicationEvent"')
+        !output.includes('value="MantleWikiPage"')
+    }
+})

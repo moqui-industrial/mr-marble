@@ -29,8 +29,11 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="documentType"><default-field title=""><drop-down no-current-selected-key=" ">
                 <option key=" " text="Any Type"/>
                 <entity-options key="${dataDocumentId}" text="${documentName}">
+                    <!-- the types search#MantleFiltered searches: messages and wiki pages are found on their own screens (SEC-DAT-81) -->
                     <entity-find entity-name="moqui.entity.document.DataDocument" cache="true">
-                        <econdition field-name="indexName" from="searchIndexName"/><order-by field-name="documentName"/>
+                        <econdition field-name="indexName" from="searchIndexName"/>
+                        <econdition field-name="dataDocumentId" operator="not-in" from="['MantleCommunicationEvent', 'MantleWikiPage']"/>
+                        <order-by field-name="documentName"/>
                     </entity-find>
                 </entity-options>
             </drop-down></default-field></field>
