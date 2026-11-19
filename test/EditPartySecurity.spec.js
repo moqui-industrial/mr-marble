@@ -1,7 +1,8 @@
 // Marble's Edit Party screen (screen/SimpleScreens/Party/EditParty.xml, its sections included by EditCustomer and
 // EditSupplier): a party's identifications follow Accounting's rule, never a tax identification and whole values and changes
 // only for RECEIVABLE_EDIT or PAYABLE_EDIT (template/party/PartyIdentifications.js; plans/Security-Review.md SEC-BAP-140).
-// One html render of Edit Party, by a user who holds neither; the transitions posted as each user.
+// The account's sign-in form and its enable and disable links show only to ADMIN_IDENTITY_MANAGE (SEC-ADM-89). One html
+// render of Edit Party, by a user who holds none of these; the transitions posted as each user.
 // Run: ./moq test mr-marble --spec EditPartySecurity
 const PARTY = "SPEC_EPS_PARTY"
 const PLAIN = "SPEC_EPS_PLAIN"
@@ -85,6 +86,10 @@ feature("Edit Party shows identifications masked and no tax one; only a receivab
         !output.includes(SSN) && !output.includes("6789")
         !output.includes(PASSPORT)
         output.includes("5432")
+        // the account's sign-in form and its enable and disable links are an account administrator's (SEC-ADM-89)
+        !output.includes("disableUserAccount") && !output.includes("enableUserAccount")
+        !output.includes("UpdateUserAccount")
+        output.includes("changed by an account administrator")
         plainChange.includes("PERMISSION_DENIED")
         plainSsn.idValue == SSN
         arList.map(row => row.partyIdTypeEnumId) == ["PtidPassport"]

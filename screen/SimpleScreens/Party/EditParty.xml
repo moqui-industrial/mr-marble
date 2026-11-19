@@ -560,17 +560,24 @@ along with this software (see the LICENSE.md file). If not, see
             </widgets></section>
 
             <section name="UserSecuritySection" condition="userAccount"><actions>
+                <set field="identityManage" from="ec.user.hasPermission('ADMIN_IDENTITY_MANAGE')"/>
+                <set field="ownAccount" from="userAccount?.userId == ec.user.userId"/>
                 <set field="localeStringList" from="[]"/>
                 <iterate list="ec.l10n.getAvailableLocales()" entry="lcl"><script>localeStringList.push(lcl)</script></iterate>
                 <order-map-list list="localeStringList"><order-by field-name="name"/></order-map-list>
             </actions><widgets>
                 <container-box><box-header title="User Account"/><box-toolbar>
                     <link url="systemUserAccount" text="Account Detail" parameter-map="{userId:userAccount.userId}"/>
-                    <link url="enableUserAccount" text="Enable Account" parameter-map="{userId:userAccount.userId}" condition="userAccount.disabled == 'Y'"/>
-                    <link url="disableUserAccount" text="Disable Account" parameter-map="{userId:userAccount.userId}" condition="userAccount.disabled != 'Y'"/>
+                    <!-- another account's sign-in fields, and its enabling or disabling, are an account administrator's
+                        (ADMIN_IDENTITY_MANAGE, as the framework's UserServices and Mantle's update#PartyUserAccount ask; SEC-ADM-89) -->
+                    <link url="enableUserAccount" text="Enable Account" parameter-map="{userId:userAccount.userId}" condition="identityManage &amp;&amp; userAccount.disabled == 'Y'"/>
+                    <link url="disableUserAccount" text="Disable Account" parameter-map="{userId:userAccount.userId}" condition="identityManage &amp;&amp; userAccount.disabled != 'Y'"/>
                     <link url="resetPassword" text="Reset Password" parameter-map="{userId:userAccount.userId}" condition="userAccount.emailAddress"
                             confirmation="Generate reset password and send by email to ${userAccount.emailAddress}?"/>
                 </box-toolbar><box-body>
+                    <label text="The account's sign-in fields are changed by an account administrator." type="p"
+                            condition="!identityManage &amp;&amp; !ownAccount"/>
+                    <section name="UpdateUserAccountShown" condition="identityManage || ownAccount"><widgets>
                     <form-single name="UpdateUserAccount" map="userAccount" transition="updateUserAccount">
                         <field name="partyId"><default-field><hidden/></default-field></field>
                         <field name="userId"><default-field><hidden/></default-field></field>
@@ -608,6 +615,7 @@ along with this software (see the LICENSE.md file). If not, see
                             <field-ref name="submitButton"/>
                         </field-layout>
                     </form-single>
+                    </widgets></section>
                 </box-body></container-box>
             </widgets></section>
             <section name="UserAuthzSection" condition="userAccount"><actions>
