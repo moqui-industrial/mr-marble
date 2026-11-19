@@ -60,18 +60,19 @@ along with this software (see the LICENSE.md file). If not, see
         <set field="findFilters" from="ec.artifactExecution.getFindFiltersForUser('mantle.product.Product')"/>
         <if condition="findFilters?.length"><set field="entityFilterSetId" from="findFilters[0].entityFilterSetId"/></if>
         <!-- <log level="warn" message="Doing product search with activeOrgId ${activeOrgId} filterOrgIds ${filterOrgIds} entityFilterSetId ${entityFilterSetId}"/> -->
+        <!-- the organization limit is a trusted filter (an in clause, which no value makes match nothing), never query text: an
+            empty group ownerPartyId:() matched every document (SEC-DAT-85) -->
         <script><![CDATA[
-            if ('MANTLE_USER_ORG' === entityFilterSetId) {
-                queryString = (queryString ? queryString + ' AND ' : '' ) + 'ownerPartyId:(' + filterOrgIds.join(' OR ') + ')'
-            } else if (('MANTLE_ACTIVE_ORG' === entityFilterSetId) && activeOrgId) {
-                queryString = (queryString ? queryString + ' AND ' : '' ) + 'ownerPartyId:(' + activeOrgId + ' OR _NA_)'
-            }
+            let ownerPartyIds = null
+            if ('MANTLE_USER_ORG' === entityFilterSetId) ownerPartyIds = Array.from(filterOrgIds || [])
+            else if (('MANTLE_ACTIVE_ORG' === entityFilterSetId) && activeOrgId) ownerPartyIds = [activeOrgId, '_NA_']
+            searchFilter = ownerPartyIds ? {field: {name: 'ownerPartyId', op: 'in', values: ownerPartyIds.length ? ownerPartyIds : ['_NONE_']}} : null
         ]]></script>
 
         <if condition="orderByField"><set field="orderByFields" from="[orderByField]"/></if>
         <if condition="queryString">
             <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
-                    in-map="Object.assign({}, context, {indexName:indexName, documentType:documentType})"/>
+                    in-map="Object.assign({}, context, {indexName:indexName, documentType:documentType, filter:searchFilter})"/>
         </if>
 
         <set field="productIds" from="documentList?.length ? documentList.map(it => it._id) : null"/>
