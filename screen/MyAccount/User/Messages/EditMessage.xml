@@ -19,20 +19,32 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="communicationEventId" required="true"/>
     <parameter name="partyId"/>
 
-    <transition name="updateMessage"><service-call name="update#mantle.party.communication.CommunicationEvent"/>
+    <!-- Messages.xml's always-actions refuse a message the user is not a party to; each transition takes only its form's
+        fields: the sender changes a message's text, any party its status, and a reply is from the user (SEC-RTE-81) -->
+    <transition name="updateMessage">
+        <actions>
+            <entity-find-one entity-name="mantle.party.communication.CommunicationEvent" value-field="commEvent"/>
+            <if condition="commEvent.fromPartyId != ec.user.userAccount?.partyId"><return error="true" message="Only the sender changes a message"/></if>
+            <service-call name="update#mantle.party.communication.CommunicationEvent" in-map="{communicationEventId:communicationEventId, body:body}"/>
+        </actions>
         <default-response url="."/></transition>
-    <transition name="updateStatus"><service-call name="update#mantle.party.communication.CommunicationEvent"/>
+    <transition name="updateStatus"><service-call name="update#mantle.party.communication.CommunicationEvent"
+            in-map="{communicationEventId:communicationEventId, statusId:statusId}"/>
         <default-response url="."/></transition>
 
-    <transition name="createCommunicationEventPurpose"><service-call name="create#mantle.party.communication.CommunicationEventPurpose"/>
+    <transition name="createCommunicationEventPurpose"><service-call name="create#mantle.party.communication.CommunicationEventPurpose"
+            in-map="{communicationEventId:communicationEventId, purposeEnumId:purposeEnumId, description:description}"/>
         <default-response url="."/></transition>
-    <transition name="updateCommunicationEventPurpose"><service-call name="update#mantle.party.communication.CommunicationEventPurpose"/>
+    <transition name="updateCommunicationEventPurpose"><service-call name="update#mantle.party.communication.CommunicationEventPurpose"
+            in-map="Object.fromEntries(Object.entries({communicationEventId:communicationEventId, purposeEnumId:purposeEnumId, description:description}).filter((entry) =&gt; entry[1] != null))"/>
         <default-response url="."/></transition>
-    <transition name="deleteCommunicationEventPurpose"><service-call name="delete#mantle.party.communication.CommunicationEventPurpose"/>
+    <transition name="deleteCommunicationEventPurpose"><service-call name="delete#mantle.party.communication.CommunicationEventPurpose"
+            in-map="{communicationEventId:communicationEventId, purposeEnumId:purposeEnumId}"/>
         <default-response url="."/></transition>
 
     <transition name="messageThread"><default-response url="../MessageThread"/></transition>
-    <transition name="replyMessage"><service-call name="mantle.party.CommunicationServices.reply#CommunicationEvent"/>
+    <transition name="replyMessage"><service-call name="mantle.party.CommunicationServices.reply#CommunicationEvent"
+            in-map="{parentCommEventId:communicationEventId, subject:subject, body:body, fromPartyId:ec.user.userAccount?.partyId}"/>
         <default-response url="../MessageThread"/></transition>
 
     <actions>

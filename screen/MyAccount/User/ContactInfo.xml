@@ -16,9 +16,25 @@ along with this software (see the LICENSE.md file). If not, see
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
         default-menu-title="Contact Info" default-menu-index="6">
 
+    <!-- The user's own contact information, for the page, UpdateContactInfo and each transition: the party is the user's,
+        never a request's partyId (MyAccount.xml's pre-actions do not run for a transition), and a contact mech named is one
+        of the party's (plans/Security-Review.md SEC-RTE-81) -->
+    <always-actions>
+        <set field="partyId" from="ec.user.userAccount?.partyId"/>
+        <script><![CDATA[
+            if (!partyId) throw new Error('Your account has no party for contact information')
+            for (const name of ['contactMechId', 'postalContactMechId', 'telecomContactMechId', 'emailContactMechId', 'webContactMechId', 'otherContactMechId']) {
+                const contactMechId = context[name]
+                if (contactMechId && ec.entity.find('mantle.party.contact.PartyContactMech').condition({partyId, contactMechId}).count() === 0)
+                    throw new Error(`Contact information ${contactMechId} is not yours`)
+            }
+        ]]></script>
+    </always-actions>
+
     <transition name="updateContactInfo"><default-response url="UpdateContactInfo"/></transition>
     <transition name="removeContactInfo">
-        <service-call name="mantle.party.ContactServices.delete#PartyContactMech"/>
+        <service-call name="mantle.party.ContactServices.delete#PartyContactMech"
+                in-map="{partyId:partyId, contactMechId:contactMechId, contactMechPurposeId:contactMechPurposeId}"/>
         <default-response url="."/>
     </transition>
 

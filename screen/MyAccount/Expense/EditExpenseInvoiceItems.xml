@@ -40,9 +40,30 @@ along with this software (see the LICENSE.md file). If not, see
         </actions>
         <default-response url="."/>
     </transition>
-    <!-- the multi form's rows: each takes only the form's fields, and the invoice pinned above -->
+    <!-- the multi form's rows, or one item: each the form's fields of an item of the invoice pinned above, while it is
+        incoming -->
     <transition name="updateInvoiceItem">
-        <service-call name="update#mantle.account.invoice.InvoiceItem" in-map="context"/>
+        <actions>
+            <if condition="invoice.statusId != 'InvoiceIncoming'"><return error="true" message="Invoice #${invoiceId} is no longer open for changes"/></if>
+            <script><![CDATA[
+                const parameters = ec.web?.parameters || {}
+                const fields = ['itemDate', 'description', 'quantity', 'amount']
+                const rows = Object.keys(parameters).map((key) => /^invoiceItemSeqId_(\d+)$/.exec(key)).filter((match) => match)
+                        .map((match) => '_' + match[1])
+                if (!rows.length && invoiceItemSeqId) rows.push('')
+                itemChanges = rows.map((suffix) => {
+                    const row = {invoiceId: invoiceId, invoiceItemSeqId: suffix ? parameters['invoiceItemSeqId' + suffix] : invoiceItemSeqId}
+                    for (const field of fields) {
+                        const value = suffix ? parameters[field + suffix] : context[field]
+                        if (value != null) row[field] = value
+                    }
+                    return row
+                })
+            ]]></script>
+            <iterate list="itemChanges" entry="itemChange">
+                <service-call name="update#mantle.account.invoice.InvoiceItem" in-map="itemChange"/>
+            </iterate>
+        </actions>
         <default-response url="."/>
     </transition>
     <transition name="deleteInvoiceItem">

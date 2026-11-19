@@ -17,19 +17,41 @@ along with this software (see the LICENSE.md file). If not, see
 
     <parameter name="workEffortId" required="true"/>
 
-    <transition name="updateEvent"><service-call name="update#mantle.work.effort.WorkEffort"/><default-response url="."/></transition>
-    <transition name="cloneWorkEffort"><service-call name="mantle.work.WorkEffortServices.clone#WorkEffort"/><default-response url="."/></transition>
+    <!-- the user's party is a party to the event, for the page and for each transition (a transition's own actions run past a
+        returned error, so it throws); each transition takes only its form's fields, for this work effort
+        (plans/Security-Review.md SEC-RTE-81) -->
+    <always-actions>
+        <entity-find entity-name="mantle.work.effort.WorkEffortParty" list="checkWepList">
+            <date-filter/><econdition field-name="workEffortId"/><econdition field-name="partyId" from="ec.user.userAccount?.partyId || '_NA_'"/></entity-find>
+        <if condition="!checkWepList?.length"><script>throw new Error(`You are not a party to event ${workEffortId}`)</script></if>
+    </always-actions>
 
-    <transition name="createNote"><service-call name="create#mantle.work.effort.WorkEffortNote"/><default-response url="."/></transition>
-    <transition name="updateNote"><service-call name="update#mantle.work.effort.WorkEffortNote"/><default-response url="."/></transition>
+    <transition name="updateEvent"><service-call name="update#mantle.work.effort.WorkEffort" in-map="Object.fromEntries(Object.entries({workEffortId:workEffortId,
+            workEffortName:workEffortName, purposeEnumId:purposeEnumId, facilityId:facilityId, estimatedStartDate:estimatedStartDate,
+            estimatedWorkDuration:estimatedWorkDuration, description:description, statusId:statusId}).filter((entry) =&gt; entry[1] != null))"/><default-response url="."/></transition>
+    <transition name="cloneWorkEffort"><service-call name="mantle.work.WorkEffortServices.clone#WorkEffort"
+            in-map="{baseWorkEffortId:workEffortId, clearDates:true, copyAssetAssign:true}"/><default-response url="."/></transition>
 
-    <transition name="addAssetAssign"><service-call name="create#mantle.work.effort.WorkEffortAssetAssign"/><default-response url="."/></transition>
-    <transition name="updateAssetAssign"><service-call name="update#mantle.work.effort.WorkEffortAssetAssign"/><default-response url="."/></transition>
+    <transition name="createNote"><service-call name="create#mantle.work.effort.WorkEffortNote"
+            in-map="{workEffortId:workEffortId, noteText:noteText}"/><default-response url="."/></transition>
+    <transition name="updateNote"><service-call name="update#mantle.work.effort.WorkEffortNote"
+            in-map="Object.fromEntries(Object.entries({workEffortId:workEffortId, noteDate:noteDate, noteText:noteText}).filter((entry) =&gt; entry[1] != null))"/><default-response url="."/></transition>
+
+    <transition name="addAssetAssign"><service-call name="create#mantle.work.effort.WorkEffortAssetAssign"
+            in-map="{workEffortId:workEffortId, assetId:assetId, statusId:statusId, fromDate:(fromDate || ec.user.nowTimestamp)}"/>
+        <default-response url="."/></transition>
+    <transition name="updateAssetAssign"><service-call name="update#mantle.work.effort.WorkEffortAssetAssign"
+            in-map="Object.fromEntries(Object.entries({workEffortId:workEffortId, assetId:assetId, fromDate:fromDate, statusId:statusId, comments:comments, thruDate:thruDate}).filter((entry) =&gt; entry[1] != null))"/>
+        <default-response url="."/></transition>
     <!-- <transition name="equipmentDetail"><default-response url="."/></transition> -->
 
     <transition-include name="searchPartyList" location="component://mr-marble/template/party/PartyForms.xml"/>
-    <transition name="addAssignment"><service-call name="create#mantle.work.effort.WorkEffortParty"/><default-response url="."/></transition>
-    <transition name="updateAssignment"><service-call name="update#mantle.work.effort.WorkEffortParty"/><default-response url="."/></transition>
+    <transition name="addAssignment"><service-call name="create#mantle.work.effort.WorkEffortParty"
+            in-map="{workEffortId:workEffortId, partyId:partyId, roleTypeId:(roleTypeId || '_NA_'), fromDate:(fromDate || ec.user.nowTimestamp), statusId:statusId}"/>
+        <default-response url="."/></transition>
+    <transition name="updateAssignment"><service-call name="update#mantle.work.effort.WorkEffortParty"
+            in-map="Object.fromEntries(Object.entries({workEffortId:workEffortId, partyId:partyId, roleTypeId:roleTypeId, fromDate:fromDate, statusId:statusId, thruDate:thruDate}).filter((entry) =&gt; entry[1] != null))"/>
+        <default-response url="."/></transition>
     <!-- <transition name="editParty"><default-response url="."/></transition> -->
 
     <actions>

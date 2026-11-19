@@ -22,8 +22,18 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="emailContactMechId"/>
     <parameter name="emailContactMechPurposeId"/>
 
+    <!-- the user's own party (ContactInfo.xml's always-actions) and the service's contact fields, never an orderId or
+        shipmentId, which would point another order's or shipment's address at it (SEC-RTE-81) -->
     <transition name="storeContactInfo">
-        <service-call name="mantle.party.ContactServices.store#PartyContactInfo"/>
+        <actions>
+            <script><![CDATA[
+                const excluded = ['partyId', 'orderId', 'orderPartSeqId', 'shipmentId', 'shipmentRouteSegmentSeqId', 'shipmentSetOrigin', 'shipmentSetDest']
+                contactIn = {partyId: partyId}
+                for (const name of Array.from(ec.service.getServiceDefinition('mantle.party.ContactServices.store#PartyContactInfo').inParameterNames))
+                    if (!excluded.includes(name) && context[name] != null) contactIn[name] = context[name]
+            ]]></script>
+            <service-call name="mantle.party.ContactServices.store#PartyContactInfo" in-map="contactIn"/>
+        </actions>
         <default-response url=".."/>
     </transition>
     <transition-include name="getGeoCountryStates" location="component://mr-marble/template/party/PartyForms.xml"/>

@@ -16,7 +16,11 @@ along with this software (see the LICENSE.md file). If not, see
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd">
 
     <transition name="createTask">
-        <service-call name="mantle.work.TaskServices.create#SimpleTask" in-map="Object.assign({}, context, {assignToPartyId:ec.user.userAccount.partyId})"/>
+        <!-- the form's fields, assigned to the user, never a posted project or parent (rootWorkEffortId, parentWorkEffortId)
+            that would add a task to any project (SEC-RTE-81) -->
+        <service-call name="mantle.work.TaskServices.create#SimpleTask" in-map="{workEffortName:workEffortName, priority:priority,
+                purposeEnumId:purposeEnumId, estimatedCompletionDate:estimatedCompletionDate, estimatedWorkTime:estimatedWorkTime,
+                description:description, assignToPartyId:ec.user.userAccount?.partyId}"/>
         <default-response url="../TaskDetail"/>
     </transition>
     <transition name="taskDetail"><default-response url="../TaskDetail"/></transition>

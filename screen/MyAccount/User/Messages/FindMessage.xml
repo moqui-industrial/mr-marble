@@ -20,7 +20,9 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="editMessage"><default-response url="../EditMessage"/></transition>
     <transition name="messageThread"><default-response url="../MessageThread"/></transition>
-    <transition name="createMessage"><service-call name="mantle.party.CommunicationServices.create#Message"/>
+    <!-- a message from the user's own party, with the form's fields only (SEC-RTE-81) -->
+    <transition name="createMessage"><service-call name="mantle.party.CommunicationServices.create#Message"
+            in-map="{fromPartyId:ec.user.userAccount?.partyId, toPartyId:toPartyId, purposeEnumId:purposeEnumId, subject:subject, body:body}"/>
         <default-response url="."/></transition>
 
     <transition-include name="searchPartyList" location="component://mr-marble/template/party/PartyForms.xml"/>
@@ -28,11 +30,14 @@ along with this software (see the LICENSE.md file). If not, see
     <actions>
         <if condition="toCurrentUser == 'true'"><set field="toPartyId" from="ec.user.userAccount.partyId"/></if>
         <!-- <entity-find-one entity-name="mantle.party.PartyDetail" value-field="party"/> -->
+        <!-- the user's own messages, by their party, never a partyId of the request: the list's own loads (the actions
+            transition) run without MyAccount.xml's pre-actions (SEC-RTE-81) -->
+        <set field="myPartyId" from="ec.user.userAccount?.partyId || '_NA_'"/>
         <entity-find entity-name="mantle.party.communication.CommunicationEventAndPurpose" list="commEventList">
             <search-form-inputs default-order-by="-entryDate"/>
             <econditions combine="or">
-                <econdition field-name="fromPartyId" from="partyId" ignore-if-empty="true"/>
-                <econdition field-name="toPartyId" from="partyId" ignore-if-empty="true"/>
+                <econdition field-name="fromPartyId" from="myPartyId"/>
+                <econdition field-name="toPartyId" from="myPartyId"/>
             </econditions>
             <econdition field-name="communicationEventTypeId" operator="in" value="Email,Message,Comment"/>
             <select-field field-name="communicationEventId"/><select-field field-name="entryDate"/>

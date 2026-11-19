@@ -19,6 +19,17 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="partyId" from="partyId || ec.user.userAccount?.partyId"/>
     <parameter name="clockInMode"/>
 
+    <!-- the entry named is the party's, for the page and for a post (a check in actions would not run for the
+        transition); under My Account the party is the user's, pinned by TimeEntries.xml (SEC-RTE-81) -->
+    <always-actions>
+        <if condition="timeEntryId &amp;&amp; partyId">
+            <entity-find-one entity-name="mantle.work.time.TimeEntry" value-field="partyTimeEntry">
+                <field-map field-name="timeEntryId"/></entity-find-one>
+            <if condition="partyTimeEntry != null &amp;&amp; partyTimeEntry.partyId != partyId">
+                <script>throw new Error(`Time Entry ${timeEntryId} owned by different party`)</script></if>
+        </if>
+    </always-actions>
+
     <transition name="recordTimeEntry"><service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
         <default-response url=".."/></transition>
 

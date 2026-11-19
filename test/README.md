@@ -47,6 +47,8 @@ The regression suite (`test/`):
   a request's `pageLocation` is ignored, a comment's text is encoded, and a markdown page reaches the terminal as one
   markdown node with its id.
 - `PrintTemplate`: a print screen renders its own template, never a request's `templateLocation`.
+- `MyAccountRecords`: as a My Account user who is not ADMIN, a post naming another party's contact information,
+  message, time entry, request content or expense invoice changes none of them, and their message does not render.
 - `MyAccountUpdate`: My Account's `updateUser` changes only the caller's account, whatever `userId`, `userId_0` or
   `username` the post names.
 - `CreateDialogValues`: New Request's initial status and New Product's name are not taken from the find's parameters.

@@ -22,10 +22,14 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="editMessage"><default-response url="../../EditMessage"/></transition>
     <transition name="messageThread"><default-response url=".."/></transition>
 
-    <transition name="updateStatus"><service-call name="update#mantle.party.communication.CommunicationEvent"/>
+    <!-- Messages.xml's always-actions refuse a message the user is not a party to; a status change sets the status only,
+        and a reply is from the user (SEC-RTE-81) -->
+    <transition name="updateStatus"><service-call name="update#mantle.party.communication.CommunicationEvent"
+            in-map="{communicationEventId:communicationEventId, statusId:statusId}"/>
         <default-response url=".."/></transition>
     <transition name="replyMessage">
-        <service-call name="mantle.party.CommunicationServices.reply#CommunicationEvent" in-map="context"/>
+        <service-call name="mantle.party.CommunicationServices.reply#CommunicationEvent"
+                in-map="{parentCommEventId:communicationEventId, subject:subject, body:body, fromPartyId:ec.user.userAccount?.partyId}"/>
         <default-response url=".."/>
     </transition>
 
