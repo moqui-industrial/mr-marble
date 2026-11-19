@@ -161,8 +161,8 @@ feature("a Party screen user without ADMIN_IDENTITY_MANAGE disables no account (
 })
 
 // a new account's group is given through Admin's access rules too (SEC-ADM-91): a Party screen user makes no account in
-// a group, MarbleErpAdmin among them; an access administrator gives MarbleErpAdmin, a registered bundle, on Add to Group
-feature("a new account's group goes through Admin's access rules; an access administrator adds a user to MarbleErpAdmin (SEC-ADM-91)", {
+// a group, MarbleErpAdmin among them; MarbleErpAdmin, a registered bundle, is given on Add to Group only by ADMIN
+feature("a new account's group goes through Admin's access rules; only ADMIN adds a user to MarbleErpAdmin (SEC-ADM-91)", {
     when() {
         make("mantle.party.Party", {partyId: "SPEC_EPS_NEW", partyTypeEnumId: "PtyPerson"})
         make("mantle.party.Person", {partyId: "SPEC_EPS_NEW", firstName: "Spec", lastName: "New"})
@@ -170,13 +170,17 @@ feature("a new account's group goes through Admin's access rules; an access admi
             emailAddress: "spec.eps.new@example.com", newPassword: "Spec-eps-pass-9!", newPasswordVerify: "Spec-eps-pass-9!",
             userGroupId: "MarbleErpAdmin"})
         const newAccounts = sys(() => ec.entity.find("moqui.security.UserAccount").condition("username", "spec.eps.new").count())
+        // an access administrator of an organization, not ADMIN, does not give full Marble access (review): only ADMIN does
+        makeUser("SPEC_EPS_ACCESS", ["ADMIN_ACCESS_MANAGE", "ADMIN_ACCESS_VIEW"])
+        const byAccessAdmin = post("spec_eps_access", "createUserGroupMember", {partyId: PARTY, userId: PARTY, userGroupId: "MarbleErpAdmin"})
         const added = post("john.doe", "createUserGroupMember", {partyId: PARTY, userId: PARTY, userGroupId: "MarbleErpAdmin"})
         const members = sys(() => ec.entity.find("moqui.security.UserGroupMember")
             .condition({userGroupId: "MarbleErpAdmin", userId: PARTY}).count())
-        return {madeByPlain, newAccounts, added, members}
+        return {madeByPlain, newAccounts, byAccessAdmin, added, members}
     },
-    then({madeByPlain, newAccounts, added, members}) {
+    then({madeByPlain, newAccounts, byAccessAdmin, added, members}) {
         newAccounts == 0
+        byAccessAdmin.includes("NOT_DELEGABLE")
         added == ""
         members == 1
     }

@@ -23,9 +23,11 @@ along with this software (see the LICENSE.md file). If not, see
         <permissions userPermissionId="FISCAL_REOPEN" fromDate="0"/>
         <authz artifactAuthzId="MarbleAdminMyAccount" artifactGroupId="MY_ACCOUNT" authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
     </userGroups>
-    <!-- a registered bundle, so an access administrator gives it through Admin's rules (store#Membership: ADMIN_ACCESS_MANAGE,
-        the delegable permission below), from Edit Party's Add to Group too (SEC-ADM-91) -->
-    <moqui.security.CapabilityBundle userGroupId="MarbleErpAdmin" delegablePermissionId="ADMIN_ACCESS_MANAGE" appName="Marble"
+    <!-- a registered bundle, so it is given through Admin's rules (store#Membership), from Edit Party's Add to Group too
+        (SEC-ADM-91); full Marble access, CARD_NUMBER_EDIT and FISCAL_REOPEN among it, is given only by a holder of
+        ADMIN_IDENTITY_GLOBAL, a sealed permission the framework grants ADMIN alone, never by every organization's access
+        administrators -->
+    <moqui.security.CapabilityBundle userGroupId="MarbleErpAdmin" delegablePermissionId="ADMIN_IDENTITY_GLOBAL" appName="Marble"
             description="Marble ERP administrator" scopeDependency="organization" sequenceNum="10"/>
     <artifactGroups artifactGroupId="MarbleErpAll" description="Marble ERP (via root screen)">
         <artifacts artifactName="component://mr-marble/screen/marble.xml" artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
