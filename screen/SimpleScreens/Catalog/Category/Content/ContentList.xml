@@ -19,12 +19,18 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="createContent"><service-call name="mantle.product.ProductServices.create#ProductCategoryContent"/>
         <default-response url="."/></transition>
-    <transition name="createContentWithLocation"><service-call name="create#mantle.product.category.ProductCategoryContent"/>
+    <!-- through Mantle's create#ProductCategoryContent, which keeps a given location in the category's own content folder
+        (SEC-BAP-138) -->
+    <transition name="createContentWithLocation"><service-call name="mantle.product.ProductServices.create#ProductCategoryContent"/>
         <default-response url="."/></transition>
     <transition name="downloadContent" read-only="true">
         <parameter name="productCategoryContentId"/>
         <actions>
             <entity-find-one entity-name="mantle.product.category.ProductCategoryContent" value-field="productCategoryContent"/>
+            <!-- only a file of the record's own content folder, or an image (Content.js served, SEC-BAP-138) -->
+            <set field="contentLib" from="ec.resource.script('component://mr-mantle/service/mantle/product/Content.js')"/>
+            <if condition="productCategoryContent == null || !contentLib.served(productCategoryContent, contentLib.config({recordKind:'category'}))">
+                <return error="true" message="This document's file is not in its record's content folder"/></if>
             <script>ec.web.sendResourceResponse(productCategoryContent.contentLocation)</script>
         </actions>
         <default-response type="none"/>

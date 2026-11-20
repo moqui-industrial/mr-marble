@@ -16,6 +16,12 @@ along with this software (see the LICENSE.md file). If not, see
         default-menu-title="Party" default-menu-index="1">
 
     <parameter name="partyId" required="true"/>
+    <!-- a person who is only an applicant the user does not recruit is not available here, by Mantle's rule inside the
+        user's organizations (template/party/RecordScope.js, SEC-DAT-98), on every render and transition -->
+    <always-actions>
+        <if condition="ec.resource.script('component://mr-marble/template/party/RecordScope.js').partyHidden(partyId)">
+            <return error="true" message="RECORD_UNAVAILABLE: Party ${partyId} is not available"/></if>
+    </always-actions>
 
     <transition name="findOrder"><default-response url="//${appRoot}/Order/FindOrder"/></transition>
     <transition name="findShipment"><default-response url="//${appRoot}/Shipment/FindShipment"/></transition>
@@ -49,32 +55,65 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response url="."/></transition>
     <transition-include name="getPartySettingList" location="component://mr-marble/template/party/PartyTransitions.xml"/>
 
-    <transition name="createPartyIdentification"><service-call name="create#mantle.party.PartyIdentification"/>
-        <default-response url="."/></transition>
-    <transition name="updatePartyIdentification"><service-call name="update#mantle.party.PartyIdentification"/>
-        <default-response url="."/></transition>
-    <transition name="deletePartyIdentification"><parameter name="partyIdTypeEnumId"/>
-        <service-call name="delete#mantle.party.PartyIdentification"/><default-response url="."/></transition>
+    <!-- a party's identifications (SEC-BAP-140), with Accounting's rule (Mantle CustomerFinance.js, store#CustomerIdentification):
+        never a tax identification (SSN, FEIN, FUID: payroll's and tax setup's), written only by a holder of RECEIVABLE_EDIT or
+        PAYABLE_EDIT, never a masked value, and on a change an empty value keeps the stored one; EditCustomer and EditSupplier
+        include these -->
+    <transition name="createPartyIdentification"><actions>
+        <set field="identificationRule" from="ec.resource.script('component://mr-marble/template/party/PartyIdentifications.js')"/>
+        <script>identificationRule.store(context, false)</script>
+    </actions><default-response url="."/><error-response url="."/></transition>
+    <transition name="updatePartyIdentification"><actions>
+        <set field="identificationRule" from="ec.resource.script('component://mr-marble/template/party/PartyIdentifications.js')"/>
+        <script>identificationRule.store(context, true)</script>
+    </actions><default-response url="."/><error-response url="."/></transition>
+    <transition name="deletePartyIdentification"><parameter name="partyIdTypeEnumId"/><actions>
+        <set field="identificationRule" from="ec.resource.script('component://mr-marble/template/party/PartyIdentifications.js')"/>
+        <script>identificationRule.remove(context)</script>
+    </actions><default-response url="."/><error-response url="."/></transition>
 
     <transition name="createUserAccount"><service-call name="mantle.party.PartyServices.create#PartyUserAccount"/>
         <default-response url="."/></transition>
     <transition name="updateUserAccount"><service-call name="mantle.party.PartyServices.update#PartyUserAccount"/>
         <default-response url="."/></transition>
-    <transition name="enableUserAccount"><service-call name="org.moqui.impl.UserServices.enable#UserAccount"/>
-        <default-response url="."/></transition>
-    <transition name="disableUserAccount"><service-call name="org.moqui.impl.UserServices.disable#UserAccount"/>
-        <default-response url="."/></transition>
+    <!-- enabling or disabling an account is an account administrator's (ADMIN_IDENTITY_MANAGE), as the framework's
+        UserServices ask too; EditCustomer includes these (SEC-ADM-89) -->
+    <transition name="enableUserAccount">
+        <condition><expression>ec.user.hasPermission('ADMIN_IDENTITY_MANAGE')</expression></condition>
+        <service-call name="org.moqui.impl.UserServices.enable#UserAccount"/>
+        <default-response url="."/><error-response url="."/></transition>
+    <transition name="disableUserAccount">
+        <condition><expression>ec.user.hasPermission('ADMIN_IDENTITY_MANAGE')</expression></condition>
+        <service-call name="org.moqui.impl.UserServices.disable#UserAccount"/>
+        <default-response url="."/><error-response url="."/></transition>
     <transition name="resetPassword"><service-call name="org.moqui.impl.UserServices.reset#Password"/>
         <default-response url="."/></transition>
-    <transition name="createUserGroupMember"><service-call name="create#moqui.security.UserGroupMember"/>
-        <default-response url="."/></transition>
-    <transition name="updateUserGroupMember"><service-call name="update#moqui.security.UserGroupMember"/>
-        <default-response url="."/></transition>
+    <!-- a membership is given and ended through Admin's access rules (org.moqui.admin.AccessServices store#Membership and
+        end#Membership: ADMIN_ACCESS_MANAGE, registered bundles, privileged and sealed groups, never the actor's own account),
+        never by a write of the UserGroupMember row (SEC-ADM-91) -->
+    <transition name="createUserGroupMember"><actions>
+        <service-call name="org.moqui.admin.AccessServices.store#Membership" out-map="membership"
+                in-map="{userGroupId:userGroupId, userId:userId, reason:'Added on Edit Party'}"/>
+        <if condition="!membership?.applied">
+            <return error="true" message="${membership?.reasonCode || 'REFUSED'}: ${membership?.reason || 'The membership was not given'}"/></if>
+    </actions><default-response url="."/><error-response url="."/></transition>
+    <transition name="updateUserGroupMember"><actions>
+        <entity-find-one entity-name="moqui.security.UserGroupMember" value-field="memberRow" auto-field-map="false">
+            <field-map field-name="userGroupId"/><field-map field-name="userId"/><field-map field-name="fromDate"/></entity-find-one>
+        <if condition="memberRow == null"><return error="true" message="RECORD_UNAVAILABLE: No such membership"/></if>
+        <script>membershipRevision = String(memberRow.lastUpdatedStamp instanceof Date ? memberRow.lastUpdatedStamp.getTime()
+                : /^-?\d+$/.test(String(memberRow.lastUpdatedStamp)) ? Number(memberRow.lastUpdatedStamp) : Date.parse(String(memberRow.lastUpdatedStamp)))</script>
+        <service-call name="org.moqui.admin.AccessServices.end#Membership" out-map="membership"
+                in-map="{userGroupId:userGroupId, userId:userId, fromDate:memberRow.fromDate, expectedRevision:membershipRevision,
+                    reason:'Removed on Edit Party'}"/>
+        <if condition="!membership?.applied">
+            <return error="true" message="${membership?.reasonCode || 'REFUSED'}: ${membership?.reason || 'The membership was not ended'}"/></if>
+    </actions><default-response url="."/><error-response url="."/></transition>
 
-    <transition name="createPartyRelationship"><service-call name="create#mantle.party.PartyRelationship"/>
-        <default-response url="."/></transition>
-    <transition name="updatePartyRelationship"><service-call name="update#mantle.party.PartyRelationship"/>
-        <default-response url="."/></transition>
+    <transition name="createPartyRelationship"><actions><script>ec.resource.script('component://mr-marble/template/party/PartyRelationships.js').create(context)</script></actions>
+        <default-response url="."/><error-response url="."/></transition>
+    <transition name="updatePartyRelationship"><actions><script>ec.resource.script('component://mr-marble/template/party/PartyRelationships.js').update(context)</script></actions>
+        <default-response url="."/><error-response url="."/></transition>
     <transition name="addContact"><service-call name="mantle.sales.AccountServices.add#Contact"/>
         <default-response url="."/></transition>
     <transition name="createContact"><service-call name="mantle.sales.AccountServices.create#Contact"/>
@@ -424,13 +463,16 @@ along with this software (see the LICENSE.md file). If not, see
                 </box-body-nopad></container-box>
             </widgets></section>
 
+            <!-- never a tax identification, every value masked; changes by a receivables or payables editor of an organization the
+                party is a customer or supplier of, through Accounting's services (template/party/PartyIdentifications.js, SEC-BAP-140) -->
             <section name="PartyIdentificationSection"><actions>
-                    <entity-find entity-name="mantle.party.PartyIdentification" list="partyIdentificationList">
-                        <econdition field-name="partyId"/></entity-find>
-                    <set field="partyIdTypeEnumIds" from="partyIdentificationList.partyIdTypeEnumId"/>
+                    <set field="identificationRule" from="ec.resource.script('component://mr-marble/template/party/PartyIdentifications.js')"/>
+                    <set field="partyIdentificationList" from="identificationRule.list(partyId)"/>
+                    <set field="identificationEdit" from="identificationRule.canEdit(partyId)"/>
+                    <set field="partyIdTypeEnumIds" from="partyIdentificationList.map((row) =&gt; row.partyIdTypeEnumId).concat(Array.from(identificationRule.taxIdTypes))"/>
             </actions><widgets>
                 <container-box><box-header title="Identification"/><box-toolbar>
-                    <container-dialog id="AddIdentificationDialog" button-text="Add Identification">
+                    <container-dialog id="AddIdentificationDialog" button-text="Add Identification" condition="identificationEdit">
                         <form-single name="AddIdentificationForm" transition="createPartyIdentification">
                             <field name="partyId"><default-field><hidden/></default-field></field>
                             <field name="partyIdTypeEnumId"><default-field title="ID Type">
@@ -455,12 +497,21 @@ along with this software (see the LICENSE.md file). If not, see
                         <field name="partyIdTypeEnumId"><default-field title="ID Type">
                             <display-entity entity-name="moqui.basic.Enumeration"/>
                         </default-field></field>
-                        <field name="idValue"><default-field><text-line size="20"/></default-field></field>
-                        <field name="expireDate"><default-field><date-time type="date"/></default-field></field>
-                        <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
-                        <field name="removeButton"><default-field title="">
-                            <link url="deletePartyIdentification" text=" " icon="fa fa-trash" confirmation="Delete this ID?"/>
-                        </default-field></field>
+                        <field name="lastUpdatedStamp"><default-field><hidden/></default-field></field>
+                        <field name="valueText"><default-field title="ID Value"><display/></default-field></field>
+                        <field name="idValue">
+                            <conditional-field condition="identificationEdit" title="New Value"><text-line size="20"/></conditional-field>
+                            <default-field title=""><ignored/></default-field></field>
+                        <field name="expireDate">
+                            <conditional-field condition="identificationEdit"><date-time type="date"/></conditional-field>
+                            <default-field><display/></default-field></field>
+                        <field name="submitButton">
+                            <conditional-field condition="identificationEdit" title="Update"><submit/></conditional-field>
+                            <default-field title=""><ignored/></default-field></field>
+                        <field name="removeButton">
+                            <conditional-field condition="identificationEdit" title="">
+                                <link url="deletePartyIdentification" text=" " icon="fa fa-trash" confirmation="Delete this ID?"/></conditional-field>
+                            <default-field title=""><ignored/></default-field></field>
                     </form-list>
                 </box-body-nopad></container-box>
             </widgets></section>
@@ -523,17 +574,24 @@ along with this software (see the LICENSE.md file). If not, see
             </widgets></section>
 
             <section name="UserSecuritySection" condition="userAccount"><actions>
+                <set field="identityManage" from="ec.user.hasPermission('ADMIN_IDENTITY_MANAGE')"/>
+                <set field="ownAccount" from="userAccount?.userId == ec.user.userId"/>
                 <set field="localeStringList" from="[]"/>
                 <iterate list="ec.l10n.getAvailableLocales()" entry="lcl"><script>localeStringList.push(lcl)</script></iterate>
                 <order-map-list list="localeStringList"><order-by field-name="name"/></order-map-list>
             </actions><widgets>
                 <container-box><box-header title="User Account"/><box-toolbar>
                     <link url="systemUserAccount" text="Account Detail" parameter-map="{userId:userAccount.userId}"/>
-                    <link url="enableUserAccount" text="Enable Account" parameter-map="{userId:userAccount.userId}" condition="userAccount.disabled == 'Y'"/>
-                    <link url="disableUserAccount" text="Disable Account" parameter-map="{userId:userAccount.userId}" condition="userAccount.disabled != 'Y'"/>
+                    <!-- another account's sign-in fields, and its enabling or disabling, are an account administrator's
+                        (ADMIN_IDENTITY_MANAGE, as the framework's UserServices and Mantle's update#PartyUserAccount ask; SEC-ADM-89) -->
+                    <link url="enableUserAccount" text="Enable Account" parameter-map="{userId:userAccount.userId}" condition="identityManage &amp;&amp; userAccount.disabled == 'Y'"/>
+                    <link url="disableUserAccount" text="Disable Account" parameter-map="{userId:userAccount.userId}" condition="identityManage &amp;&amp; userAccount.disabled != 'Y'"/>
                     <link url="resetPassword" text="Reset Password" parameter-map="{userId:userAccount.userId}" condition="userAccount.emailAddress"
                             confirmation="Generate reset password and send by email to ${userAccount.emailAddress}?"/>
                 </box-toolbar><box-body>
+                    <label text="The account's sign-in fields are changed by an account administrator." type="p"
+                            condition="!identityManage &amp;&amp; !ownAccount"/>
+                    <section name="UpdateUserAccountShown" condition="identityManage || ownAccount"><widgets>
                     <form-single name="UpdateUserAccount" map="userAccount" transition="updateUserAccount">
                         <field name="partyId"><default-field><hidden/></default-field></field>
                         <field name="userId"><default-field><hidden/></default-field></field>
@@ -571,6 +629,7 @@ along with this software (see the LICENSE.md file). If not, see
                             <field-ref name="submitButton"/>
                         </field-layout>
                     </form-single>
+                    </widgets></section>
                 </box-body></container-box>
             </widgets></section>
             <section name="UserAuthzSection" condition="userAccount"><actions>

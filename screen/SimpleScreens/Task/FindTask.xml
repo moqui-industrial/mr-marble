@@ -217,6 +217,8 @@ along with this software (see the LICENSE.md file). If not, see
                     <order-by field-name="firstName,lastName,organizationName"/>
                 </entity-find>
                 <set field="ownerParty" from="ownerPartyList.find(it => it.partyId == ownerPartyId)"/>
+                <!-- a task kept from the user inside their organizations shows no name or link (SEC-DAT-98) -->
+                <set field="rowHidden" from="ec.resource.script('component://mr-marble/template/party/RecordScope.js').taskHidden(workEffortId)"/>
             </row-actions>
 
             <row-selection id-field="workEffortId">
@@ -329,10 +331,12 @@ along with this software (see the LICENSE.md file). If not, see
             </field>
             <field name="workEffortId">
                 <header-field title="ID" show-order-by="true"><text-find/></header-field>
+                <conditional-field condition="rowHidden"><display text="${workEffortId}"/></conditional-field>
                 <default-field><link text="${workEffortId}" url="editTask" link-type="anchor"/></default-field>
             </field>
             <field name="workEffortName">
                 <header-field title="Name" show-order-by="true"><text-find/></header-field>
+                <conditional-field condition="rowHidden"><display text="Not available"/></conditional-field>
                 <default-field><link text="${workEffortName}" url="editTask" link-type="anchor"/></default-field>
             </field>
             <field name="rootWorkEffortId">

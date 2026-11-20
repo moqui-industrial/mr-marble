@@ -22,7 +22,10 @@ along with this software (see the LICENSE.md file). If not, see
     <actions>
         <set field="versionNameRhs" from="versionNameRhs || versionNameLhs"/>
         <entity-find-one entity-name="mantle.product.category.ProductCategoryContent" value-field="productCategoryContent"/>
-        <set field="resourceRef" from="ec.resource.getLocationReference(productCategoryContent?.contentLocation)"/>
+        <!-- a file of the record's own content folder only is read (Content.js owned, SEC-BAP-138) -->
+        <set field="contentLib" from="ec.resource.script('component://mr-mantle/service/mantle/product/Content.js')"/>
+        <set field="resourceRef" from="productCategoryContent != null &amp;&amp; contentLib.owned(productCategoryContent, contentLib.config({recordKind:'category'}))
+                ? ec.resource.getLocationReference(productCategoryContent.contentLocation) : null"/>
         <!-- one version is shown as its text; two are compared on the server (ResourceReference.getVersionDiff), an
             HTML table with every text escaped, where the Java screen diffed characters in the browser with jsdiff -->
         <script><![CDATA[

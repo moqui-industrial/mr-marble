@@ -57,6 +57,11 @@ along with this software (see the LICENSE.md file). If not, see
             <date-filter/>
             <order-by field-name="priority"/><order-by field-name="estimatedCompletionDate"/>
         </entity-find>
+        <!-- a task kept from the user is not shown (template/party/RecordScope.js, SEC-DAT-98) -->
+        <set field="recordScope" from="ec.resource.script('component://mr-marble/template/party/RecordScope.js')"/>
+        <set field="inactiveTaskList" from="Array.from(inactiveTaskList).filter((row) =&gt; !recordScope.taskHidden(row.toWorkEffortId))"/>
+        <set field="activeTaskList" from="Array.from(activeTaskList).filter((row) =&gt; !recordScope.taskHidden(row.toWorkEffortId))"/>
+        <set field="doneTaskList" from="Array.from(doneTaskList).filter((row) =&gt; !recordScope.taskHidden(row.toWorkEffortId))"/>
     </actions>
     <widgets>
         <label text="Summary for Milestone &quot;${milestoneWorkEffort.workEffortName}&quot; - ${milestoneWorkEffortId}" type="h3"/>

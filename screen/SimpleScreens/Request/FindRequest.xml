@@ -101,8 +101,12 @@ along with this software (see the LICENSE.md file). If not, see
                 <search-form-inputs default-order-by="priority,requestDate">
                     <default-parameters statusId="ReqDraft,ReqSubmitted,ReqReviewed,ReqInProgress" statusId_op="in"/></search-form-inputs>
                 <date-filter ignore="!partyId"/>
+                <!-- a confidential HR case is never in Marble's request finds (SEC-DAT-98) -->
+                <econdition field-name="requestTypeEnumId" operator="not-equals" value="RqtHrCase" or-null="true"/>
             </entity-find>
             <row-actions>
+                <!-- a request kept from the user inside their organizations shows no name or link (SEC-DAT-98) -->
+                <set field="rowHidden" from="ec.resource.script('component://mr-marble/template/party/RecordScope.js').requestHidden(requestId)"/>
                 <entity-find entity-name="mantle.request.RequestParty" list="partyList">
                     <date-filter/><econdition field-name="requestId"/></entity-find>
                 <set field="customerRp" from="partyList.find(it => it.roleTypeId == 'Customer')"/>
@@ -131,10 +135,12 @@ along with this software (see the LICENSE.md file). If not, see
             </field>
             <field name="requestId">
                 <header-field title="ID"><text-find size="10" hide-options="true"/></header-field>
+                <conditional-field condition="rowHidden"><display text="${requestId}"/></conditional-field>
                 <default-field><link url="editRequest" text="${requestId}" link-type="anchor"/></default-field>
             </field>
             <field name="requestName">
                 <header-field title="Name" show-order-by="true"><text-find size="30"/></header-field>
+                <conditional-field condition="rowHidden"><display text="Not available"/></conditional-field>
                 <default-field><link url="editRequest" text="${requestName}" link-type="anchor"/></default-field>
             </field>
             <field name="productStoreId">

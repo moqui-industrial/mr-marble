@@ -21,7 +21,8 @@ along with this software (see the LICENSE.md file). If not, see
     <transition-include name="searchPartyList" location="component://mr-marble/template/party/PartyForms.xml" />
     <transition name="editParty"><default-response url="//${appRoot}/Party/EditParty"/></transition>
     <transition name="updatePromoCode">
-        <service-call name="update#mantle.product.store.ProductStorePromoCode"/>
+        <!-- through Mantle's service, which keeps a code's text unique within its store's organization (SEC-BAP-108) -->
+        <service-call name="mantle.product.StorePromotionServices.store#PromoCode"/>
         <default-response url="."/>
     </transition>
     <transition name="createPromoCodeParty">

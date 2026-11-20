@@ -18,15 +18,25 @@ along with this software (see the LICENSE.md file). If not, see
 
     <parameter name="partyId" required="true"/>
 
-    <transition name="addUser"><service-call name="create#mantle.request.RequestParty" in-map="context"/>
+    <!-- a party is put on a request only that the user's organizations' rules admit (SEC-DAT-98) -->
+    <transition name="addUser"><condition><expression>!ec.resource.script('component://mr-marble/template/party/RecordScope.js').requestHidden(requestId)</expression></condition><service-call name="create#mantle.request.RequestParty" in-map="context"/>
         <default-response url="."/></transition>
-    <transition name="updateUser"><service-call name="update#mantle.request.RequestParty" in-map="context"/>
+    <transition name="updateUser"><condition><expression>!ec.resource.script('component://mr-marble/template/party/RecordScope.js').requestHidden(requestId)</expression></condition><service-call name="update#mantle.request.RequestParty" in-map="context"/>
         <default-response url="."/></transition>
     <transition name="editRequest"><default-response url="//${appRoot}/Request/EditRequest"/></transition>
 
     <actions>
         <entity-find entity-name="mantle.request.RequestAndParty" list="rapList">
             <econdition field-name="partyId"/></entity-find>
+        <!-- a request kept from the user inside their organizations (an HR case, a maintenance problem outside their reach) is
+            neither listed here nor offered to add the party to (template/party/RecordScope.js, SEC-DAT-98) -->
+        <set field="recordScope" from="ec.resource.script('component://mr-marble/template/party/RecordScope.js')"/>
+        <set field="rapList" from="Array.from(rapList).filter((row) =&gt; row.requestTypeEnumId != 'RqtHrCase' &amp;&amp; !recordScope.requestHidden(row.requestId))"/>
+        <entity-find entity-name="mantle.request.Request" list="openRequestList" limit="200">
+            <econdition field-name="statusId" operator="not-in" value="ReqCompleted,ReqCancelled"/>
+            <econdition field-name="requestTypeEnumId" operator="not-equals" value="RqtHrCase" or-null="true"/>
+            <order-by field-name="-requestDate"/></entity-find>
+        <set field="openRequestList" from="Array.from(openRequestList).filter((row) =&gt; !recordScope.requestHidden(row.requestId))"/>
     </actions>
     <widgets>
         <container-dialog id="AddUserDialog" button-text="Add to Request">
@@ -34,12 +44,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <field name="partyId"><default-field><hidden/></default-field></field>
 
                 <field name="requestId"><default-field title="Request"><drop-down combo-box="true">
-                    <entity-options key="${requestId}" text="${requestId} - ${requestName}">
-                        <entity-find entity-name="Request">
-                            <econdition field-name="statusId" operator="not-in"
-                                    value="REQUEST_COMPLETED,REQUEST_REJECTED,REQUEST_CANCELLED"/>
-                        </entity-find>
-                    </entity-options>
+                    <list-options list="openRequestList" key="${requestId}" text="${requestId} - ${requestName}"/>
                 </drop-down></default-field></field>
 
                 <field name="roleTypeId"><default-field title="Role">

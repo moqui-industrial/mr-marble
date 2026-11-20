@@ -1,6 +1,7 @@
 <#-- Sales summary metrics, ported from the original statsPanel calls. -->
 <#if sri.getRenderMode() == "vuet" || sri.getRenderMode() == "html">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" type="text/javascript"></script>
+<#-- the framework's own Chart.js 4 (webroot libs), never a CDN copy (SEC-BAP-137) -->
+<script src="/libs/chartjs/chart.umd.min.js" type="text/javascript"></script>
 </#if>
 <div class="row">
 <div class="${statsPanelColStyle}">${raw(ec.resource.template("component://mr-marble/screen/SimpleScreens/Accounting/Reports/SalesSummaryStats-panel.html.fancy", {title: "Order Count", mainFormat: "#,##0", valThis: ordersThis?.orderCount ?? 0, valLast: ordersLast?.orderCount ?? 0, valPrior: ordersPrior?.orderCount ?? 0, valAvg: ordersAverage?.orderCount ?? 0, chartList: Array.from(orderSummaryNoTotals ?? []).map(it => it.orderCount), chartMaList: Array.from(orderSummaryNoTotals ?? []).map(it => it.orderCountMa), labelList: orderLabelList}))}</div>

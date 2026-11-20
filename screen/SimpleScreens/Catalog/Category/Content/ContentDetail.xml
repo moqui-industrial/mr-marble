@@ -24,6 +24,10 @@ along with this software (see the LICENSE.md file). If not, see
         <parameter name="productCategoryContentId"/>
         <actions>
             <entity-find-one entity-name="mantle.product.category.ProductCategoryContent" value-field="productCategoryContent"/>
+            <!-- only a file of the record's own content folder, or an image (Content.js served, SEC-BAP-138) -->
+            <set field="contentLib" from="ec.resource.script('component://mr-mantle/service/mantle/product/Content.js')"/>
+            <if condition="productCategoryContent == null || !contentLib.served(productCategoryContent, contentLib.config({recordKind:'category'}))">
+                <return error="true" message="This document's file is not in its record's content folder"/></if>
             <script>ec.web.sendResourceResponse(productCategoryContent.contentLocation)</script>
         </actions>
         <default-response type="none"/>
@@ -31,7 +35,10 @@ along with this software (see the LICENSE.md file). If not, see
 
     <actions>
         <entity-find-one entity-name="mantle.product.category.ProductCategoryContent" value-field="productCategoryContent"/>
-        <set field="resourceRef" from="ec.resource.getLocationReference(productCategoryContent?.contentLocation)"/>
+        <!-- a file of the record's own content folder only is read (Content.js owned, SEC-BAP-138) -->
+        <set field="contentLib" from="ec.resource.script('component://mr-mantle/service/mantle/product/Content.js')"/>
+        <set field="resourceRef" from="productCategoryContent != null &amp;&amp; contentLib.owned(productCategoryContent, contentLib.config({recordKind:'category'}))
+                ? ec.resource.getLocationReference(productCategoryContent.contentLocation) : null"/>
         <if condition="resourceRef != null">
             <set field="supportsVersion" from="resourceRef.supportsVersion()"/>
             <set field="isText" from="!resourceRef.isBinary()"/>

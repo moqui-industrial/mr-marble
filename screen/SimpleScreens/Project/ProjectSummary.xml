@@ -253,6 +253,8 @@ along with this software (see the LICENSE.md file). If not, see
                                 <econdition field-name="parentWorkEffortId" from="taskId"/>
                                 <order-by field-name="statusSequenceNum,priority,workEffortName"/>
                             </entity-find>
+                            <!-- a task kept from the user is not shown (template/party/RecordScope.js, SEC-DAT-98) -->
+                            <set field="childTasks" from="Array.from(childTasks).filter((row) =&gt; !ec.resource.script('component://mr-marble/template/party/RecordScope.js').taskHidden(row.workEffortId))"/>
                         </actions>
                     </tree-sub-node>
                 </tree-node>
@@ -264,6 +266,8 @@ along with this software (see the LICENSE.md file). If not, see
                             <econdition field-name="parentWorkEffortId" from="null"/>
                             <order-by field-name="statusSequenceNum,priority,workEffortName"/>
                         </entity-find>
+                        <!-- a task kept from the user is not shown (template/party/RecordScope.js, SEC-DAT-98) -->
+                        <set field="topLevelTasks" from="Array.from(topLevelTasks).filter((row) =&gt; !ec.resource.script('component://mr-marble/template/party/RecordScope.js').taskHidden(row.workEffortId))"/>
                     </actions>
                 </tree-sub-node>
             </tree>
