@@ -16,7 +16,7 @@ along with this software (see the LICENSE.md file). If not, see
     Work.gitecas.xml (a task ID in a commit message, a Task trailer, a branch or tag named for the task) in the
     repositories of the task's project. New screen, no SimpleScreens original. -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/mr-xml-screen.xsd"
         default-menu-title="Source" default-menu-index="7">
 
     <parameter name="workEffortId" required="true"/>

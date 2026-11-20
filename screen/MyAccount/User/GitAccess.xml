@@ -16,7 +16,7 @@ along with this software (see the LICENSE.md file). If not, see
     HTTPS (and an api_key), and SSH public keys for git and SFTP over the built-in SSH server. New screen, no
     SimpleScreens original. -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/mr-xml-screen.xsd"
         default-menu-title="Git Access" default-menu-index="10">
 
     <transition name="createAccessToken"><service-call name="org.moqui.impl.UserServices.create#UserAccessToken"
