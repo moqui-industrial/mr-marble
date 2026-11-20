@@ -15,7 +15,7 @@ along with this software (see the LICENSE.md file). If not, see
 <!-- The git repositories of a project (mantle.work.GitServices; the repositories are hosted by MR Moqui at /git and over
     SSH), and the tags linked to it. New screen, no SimpleScreens original. -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/mr-xml-screen.xsd"
         default-menu-title="Repositories" default-menu-index="6">
 
     <parameter name="rootWorkEffortId" required="true"/>

@@ -3,7 +3,7 @@
     moqui test when it serves the client specs, which test/client/suite.js declares): the app mount at /apps/SimpleScreens that MoquiConf.xml
     leaves commented out, which the client specs' screens are under. SimpleScreens normally relies on the application
     that mounts it. -->
-<moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-3.xsd">
+<moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/mr-moqui-conf.xsd">
     <screen-facade>
         <screen location="component://webroot/screen/webroot/apps.xml">
             <subscreens-item name="SimpleScreens" menu-title="Simple Screens" menu-index="95"
