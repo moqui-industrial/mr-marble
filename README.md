@@ -46,7 +46,7 @@ In an [mr-moqui](https://github.com/moqui/mr-moqui#quick-start) checkout:
 ./moq run
 ```
 
-Open `http://localhost:8080`, sign in as `john.doe` with the password `moqui`, and choose Marble ERP in the app
+Open `https://localhost:8443`, sign in as `john.doe` with the password `moqui`, and choose Marble ERP in the app
 list. The demo data is Mantle's: a company, Ziziwork Industries, with customers, suppliers, products and orders.
 
 To have this component load before yours, depend on it in your `component.xml`:
