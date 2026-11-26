@@ -124,3 +124,26 @@ feature("another party's message and request content are not shown", {
         !download.output.includes(SECRET)
     }
 })
+
+// an event the user made in My Calendar is theirs as its organizer (its owner; New Event makes no party row), another's is not
+feature("an event the user organizes opens in EventDetail; another party's event does not", {
+    when() {
+        sys(() => {
+            for (const [workEffortId, ownerPartyId] of [["SPEC_MAR_EVT_ME", ME], ["SPEC_MAR_EVT_OTHER", OTHER]])
+                if (!one("mantle.work.effort.WorkEffort", {workEffortId}))
+                    make("mantle.work.effort.WorkEffort", {workEffortId, workEffortTypeEnumId: "WetEvent", workEffortName: "Spec " + workEffortId,
+                        statusId: "WeInPlanning", ownerPartyId})
+        })
+        login(ME.toLowerCase())
+        const mine = request("apps/my/User/Calendar/EventDetail", {workEffortId: "SPEC_MAR_EVT_ME"}, null)
+        const theirs = request("apps/my/User/Calendar/EventDetail", {workEffortId: "SPEC_MAR_EVT_OTHER"}, null)
+        const renamed = request("apps/my/User/Calendar/EventDetail/updateEvent", {workEffortId: "SPEC_MAR_EVT_OTHER", workEffortName: "stolen"}, "post")
+        return {mine, theirs, renamed, other: one("mantle.work.effort.WorkEffort", {workEffortId: "SPEC_MAR_EVT_OTHER"})}
+    },
+    then({mine, theirs, renamed, other}) {
+        mine.errors == "" && mine.output.includes("Spec SPEC_MAR_EVT_ME")
+        theirs.errors.includes("You are not a party to event SPEC_MAR_EVT_OTHER")
+        !theirs.output.includes("Spec SPEC_MAR_EVT_OTHER")
+        other.workEffortName == "Spec SPEC_MAR_EVT_OTHER"
+    }
+})
