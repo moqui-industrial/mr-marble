@@ -18,7 +18,11 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="partyId" required="true"/>
 
     <transition name="editAcctgPreferences"><default-response url="."/></transition>
-    <transition name="updatePartyAcctgPreference"><service-call name="update#mantle.ledger.config.PartyAcctgPreference"/>
+    <!-- self approval keeps its stored value unless the user holds ACCOUNTING_SELF_APPROVAL (SEC-BOS-06), as Mantle's
+        store#Preferences turns it on only for a holder -->
+    <transition name="updatePartyAcctgPreference"><service-call name="update#mantle.ledger.config.PartyAcctgPreference"
+            in-map="ec.user.hasPermission('ACCOUNTING_SELF_APPROVAL') ? context : Object.assign({}, context, {allowAccountingSelfApproval:
+                (ec.entity.find('mantle.ledger.config.PartyAcctgPreference').condition('organizationPartyId', organizationPartyId).disableAuthz().one()?.allowAccountingSelfApproval ?? 'N')})"/>
         <default-response url="."/></transition>
 
     <transition name="initPartyAccountingConfiguration">

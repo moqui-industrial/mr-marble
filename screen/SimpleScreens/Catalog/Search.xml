@@ -58,14 +58,16 @@ along with this software (see the LICENSE.md file). If not, see
         <set field="activeOrgId" from="ec.user.context?.activeOrgId"/>
         <set field="filterOrgIds" from="ec.user.context?.filterOrgIds"/>
         <set field="findFilters" from="ec.artifactExecution.getFindFiltersForUser('mantle.product.Product')"/>
-        <if condition="findFilters?.length"><set field="entityFilterSetId" from="findFilters[0].entityFilterSetId"/></if>
+        <!-- every filter set of the user's authorization, in no set order: the organization set need not be the first
+            (MANTLE_PRIVATE_CONTACT and others beside it), so it is looked for among them all (SEC-DAT-86) -->
+        <set field="entityFilterSetIds" from="Array.from(findFilters || []).map(filter =&gt; filter.entityFilterSetId)"/>
         <!-- <log level="warn" message="Doing product search with activeOrgId ${activeOrgId} filterOrgIds ${filterOrgIds} entityFilterSetId ${entityFilterSetId}"/> -->
         <!-- the organization limit is a trusted filter (an in clause, which no value makes match nothing), never query text: an
             empty group ownerPartyId:() matched every document (SEC-DAT-85) -->
         <script><![CDATA[
             let ownerPartyIds = null
-            if ('MANTLE_USER_ORG' === entityFilterSetId) ownerPartyIds = Array.from(filterOrgIds || [])
-            else if (('MANTLE_ACTIVE_ORG' === entityFilterSetId) && activeOrgId) ownerPartyIds = [activeOrgId, '_NA_']
+            if (entityFilterSetIds.includes('MANTLE_USER_ORG')) ownerPartyIds = Array.from(filterOrgIds || [])
+            else if ((entityFilterSetIds.includes('MANTLE_ACTIVE_ORG')) && activeOrgId) ownerPartyIds = [activeOrgId, '_NA_']
             searchFilter = ownerPartyIds ? {field: {name: 'ownerPartyId', op: 'in', values: ownerPartyIds.length ? ownerPartyIds : ['_NONE_']}} : null
         ]]></script>
 
