@@ -1,7 +1,7 @@
 // The print screens (Order/PrintOrder.xml, Accounting/Invoice/PrintInvoice.xml, Accounting/Payment/PaymentCheck.xml and
 // PaymentDetail.xml, Shipment/ShipmentPick.xml, ShipmentPack.xml, ShipmentInsert.xml and ShipmentByPackage.xml) render
 // their own template, or the one a store or organization setting names, never a templateLocation of the request, which
-// rendered any component file as a template (plans/Security-Review.md SEC-SCR-81). One html-print render of ShipmentInsert.
+// rendered any component file as a template (plans/archive/Security-Review.md SEC-SCR-81). One html-print render of ShipmentInsert.
 // Run: ./moq test mr-marble --spec PrintTemplate
 const SHIPMENT = "SPEC_PRINT_SHP"
 const COMPONENT_FILE = "component://mr-marble/test/README.md"

@@ -23,7 +23,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- Each transition names the user's own account and only the fields of its form, never the request's whole context:
         a posted userId, a username, disabled or requirePasswordChange does not reach the service, nor does a multi post's
-        userId_0 (plans/Security-Review.md SEC-RTE-81). The username is not changed here: too easy to fish for others. -->
+        userId_0 (plans/archive/Security-Review.md SEC-RTE-81). The username is not changed here: too easy to fish for others. -->
     <transition name="updateUser"><service-call name="mantle.party.PartyServices.update#Account" in-map="{userId:ec.user.userId,
             partyId:ec.user.userAccount?.partyId, firstName:firstName, middleName:middleName, lastName:lastName,
             emailAddress:emailAddress, locale:locale, timeZone:timeZone}"/>

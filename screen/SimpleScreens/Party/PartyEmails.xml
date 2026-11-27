@@ -18,7 +18,7 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="partyId" required="true"/>
 
     <!-- sends again only a message of this party's, as the list below finds them (by the party's users or its email
-        addresses), never any message by its id (plans/Security-Review-Medium.md SEC-MAIL-64) -->
+        addresses), never any message by its id (plans/archive/Security-Review-Medium.md SEC-MAIL-64) -->
     <transition name="sendEmailMessage"><parameter name="emailMessageId"/><actions>
         <entity-find entity-name="moqui.security.UserAccount" list="userAccountList">
             <econdition field-name="partyId"/></entity-find>
@@ -49,7 +49,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- One message of this party's, as the list below finds them: by the party's users or its email addresses, never
         by the id alone (any message's body, a password reset's included, was readable). Its HTML is mail, from outside
-        and not cleaned, so it is sent sandboxed: no script, no origin of the application's (plans/Security-Review.md
+        and not cleaned, so it is sent sandboxed: no script, no origin of the application's (plans/archive/Security-Review.md
         SEC-MAIL-63). -->
     <transition name="EmailMessage" read-only="true"><parameter name="emailMessageId"/><actions>
         <entity-find entity-name="moqui.security.UserAccount" list="userAccountList">

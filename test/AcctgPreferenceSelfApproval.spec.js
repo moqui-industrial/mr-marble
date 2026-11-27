@@ -1,6 +1,6 @@
 // Marble's Accounting Preferences (Accounting/OrgSettings/AcctgPreference updatePartyAcctgPreference, an entity-auto update)
 // keeps self approval as stored for a user without ACCOUNTING_SELF_APPROVAL, as Mantle's store#Preferences turns it on only for a
-// holder (plans/Security-Review-Low.md SEC-BOS-06); john.doe (ADMIN) holds it. Run: ./moq test mr-marble --spec AcctgPreferenceSelfApproval
+// holder (plans/archive/Security-Review-Low.md SEC-BOS-06); john.doe (ADMIN) holds it. Run: ./moq test mr-marble --spec AcctgPreferenceSelfApproval
 const ORG = "SPEC_APSA_ORG",
     USER = "SPEC_APSA_USER"
 const root = "component://mr-marble/screen/SimpleScreens.xml"

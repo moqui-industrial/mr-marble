@@ -20,7 +20,7 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="editInvoice"><default-response url="../EditExpenseInvoice"/></transition>
     <!-- the user's own invoices: the party is the user's, never a posted fromPartyId or workerPartyId (the partyId of
         MyAccount.xml's pre-actions is not set for a transition), and an existing invoice time goes on is the user's own open
-        one (plans/Security-Review.md SEC-RTE-81) -->
+        one (plans/archive/Security-Review.md SEC-RTE-81) -->
     <transition name="createInvoice">
         <service-call name="mantle.account.InvoiceServices.create#ProjectExpenseInvoice" in-map="{fromPartyId:ec.user.userAccount?.partyId,
                 workEffortId:workEffortId, invoiceDate:invoiceDate, description:description}"/>

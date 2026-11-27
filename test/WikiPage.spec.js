@@ -1,6 +1,6 @@
 // A wiki page on the Marble wiki screens (screen/SimpleScreens/Wiki/wiki.xml, ViewWikiPage.xml): the page is rendered by
 // WikiServices.render#WikiPage, found by its space and path, never by a location rendered as a template
-// (plans/Security-Review.md SEC-SCR-81). The qvt render shows the page's HTML under v-pre, its markup cleaned and its
+// (plans/archive/Security-Review.md SEC-SCR-81). The qvt render shows the page's HTML under v-pre, its markup cleaned and its
 // ${} and {{ }} as text; a request's pageLocation is ignored, also where the page is not found; the terminal gets a
 // markdown page as one markdown node with its id (it was first source text, then a node with no id, which the terminal
 // client refused: "screen model json: missing field `id`"). One render of each screen in each mode it has a template for.

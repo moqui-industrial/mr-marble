@@ -50,7 +50,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="wikiCommentReply"><default-response url="WikiCommentReply"/></transition>
     <!-- a comment on a page the user may view, a category on one the user may change (get#WikiPageAccess), with the forms'
-        fields only (plans/Security-Review.md SEC-RTE-81) -->
+        fields only (plans/archive/Security-Review.md SEC-RTE-81) -->
     <transition name="addComment">
         <actions>
             <service-call name="org.moqui.resource.WikiServices.get#WikiPageAccess" in-map="{wikiPageId:wikiPageId}" out-map="commentAccess"/>

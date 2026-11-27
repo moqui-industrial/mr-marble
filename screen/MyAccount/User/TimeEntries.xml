@@ -18,7 +18,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- The user's own time: the party is the user's for the page, EditTimeEntry and each transition, never a posted
         partyId (MyAccount.xml's pre-actions do not run for a transition), and a time entry named is one of the user's
-        (plans/Security-Review.md SEC-RTE-81) -->
+        (plans/archive/Security-Review.md SEC-RTE-81) -->
     <always-actions>
         <set field="partyId" from="ec.user.userAccount?.partyId"/>
         <if condition="!partyId"><script>throw new Error('Your account has no party to record time for')</script></if>

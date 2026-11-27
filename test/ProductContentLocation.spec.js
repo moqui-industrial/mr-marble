@@ -1,6 +1,6 @@
 // Catalog › Product › Content's and Category › Content's New by Location make a row through Mantle's create#ProductContent and
 // create#ProductCategoryContent, so a row of any type naming a file outside its record's own content folder is refused
-// (plans/Security-Review-Medium.md SEC-PSS-82, SEC-BAP-138), and the Download transitions stream only a file of that folder or
+// (plans/archive/Security-Review-Medium.md SEC-PSS-82, SEC-BAP-138), and the Download transitions stream only a file of that folder or
 // an image (Content.js served): a row written outside it before is not streamed. As john.doe.
 // Run: ./moq test mr-marble --spec ProductContentLocation
 const webroot = "component://webroot/screen/webroot.xml"

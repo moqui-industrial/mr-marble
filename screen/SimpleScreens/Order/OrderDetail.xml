@@ -71,7 +71,7 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="sendOrderStoreEmail"><service-call name="mantle.order.OrderInfoServices.send#OrderStoreEmail"/>
         <default-response url="."/></transition>
     <!-- sends again only a message of this order, as its list finds them, never any message by its id
-        (plans/Security-Review-Medium.md SEC-MAIL-64) -->
+        (plans/archive/Security-Review-Medium.md SEC-MAIL-64) -->
     <transition name="sendEmailMessage"><parameter name="emailMessageId"/><actions>
         <set field="recordEmailMessage" from="null"/>
         <if condition="emailMessageId &amp;&amp; orderId">
@@ -164,7 +164,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- One message of this order's, as its list finds them, never any message by its id (any message's body, a
         password reset's included, was readable). Its HTML is mail, not cleaned, so it is sent sandboxed: no script, no
-        origin of the application's (plans/Security-Review.md SEC-MAIL-63, as Party > Emails). -->
+        origin of the application's (plans/archive/Security-Review.md SEC-MAIL-63, as Party > Emails). -->
     <transition name="EmailMessage" read-only="true"><parameter name="emailMessageId"/><actions>
         <set field="recordEmailMessage" from="null"/>
         <if condition="emailMessageId &amp;&amp; orderId">

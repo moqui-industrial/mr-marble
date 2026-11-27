@@ -21,7 +21,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- the user's own expense invoice, for the page and for each transition: pre-actions do not run for a transition, so
         a check there let a post change anyone's invoice items. The invoiceId set here is pinned: a multi post's rows
-        (invoiceId_1, ...) do not replace it (plans/Security-Review.md SEC-RTE-81). -->
+        (invoiceId_1, ...) do not replace it (plans/archive/Security-Review.md SEC-RTE-81). -->
     <always-actions>
         <set field="partyId" from="ec.user.userAccount?.partyId"/>
         <set field="invoiceId" from="invoiceId || invoiceId_0"/>
