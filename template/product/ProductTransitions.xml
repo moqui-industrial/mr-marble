@@ -49,7 +49,9 @@ along with this software (see the LICENSE.md file). If not, see
             <set field="activeOrgId" from="ec.user.context?.activeOrgId"/>
             <set field="filterOrgIds" from="ec.user.context?.filterOrgIds"/>
             <set field="findFilters" from="ec.artifactExecution.getFindFiltersForUser('mantle.product.Product')"/>
-            <if condition="findFilters?.length"><set field="entityFilterSetId" from="findFilters[0].entityFilterSetId"/></if>
+            <!-- every filter set of the user's authorization, in no set order: the organization set need not be the first
+                (MANTLE_PRIVATE_CONTACT and others beside it), so it is looked for among them all (SEC-DAT-86) -->
+            <set field="entityFilterSetIds" from="Array.from(findFilters || []).map(filter =&gt; filter.entityFilterSetId)"/>
             <!-- <log level="warn" message="Doing product search with activeOrgId ${activeOrgId} filterOrgIds ${filterOrgIds} entityFilterSetId ${entityFilterSetId}"/> -->
 
             <script><![CDATA[
@@ -62,8 +64,8 @@ along with this software (see the LICENSE.md file). If not, see
                 if (assetClassEnumId) termSb += ' AND assetClassEnumId:' + assetClassEnumId
                 // the organization limit is a trusted filter, not query text a term could close and widen (SEC-DAT-81)
                 let ownerPartyIds = null
-                if (entityFilterSetId === 'MANTLE_USER_ORG') ownerPartyIds = (filterOrgIds || []).slice()
-                else if (entityFilterSetId === 'MANTLE_ACTIVE_ORG' && activeOrgId) ownerPartyIds = [activeOrgId, '_NA_']
+                if (entityFilterSetIds.includes('MANTLE_USER_ORG')) ownerPartyIds = (filterOrgIds || []).slice()
+                else if (entityFilterSetIds.includes('MANTLE_ACTIVE_ORG') && activeOrgId) ownerPartyIds = [activeOrgId, '_NA_']
                 searchFilter = ownerPartyIds ? {field: {name: 'ownerPartyId', op: 'in', values: ownerPartyIds.length ? ownerPartyIds : ['_NONE_']}} : null
             ]]></script>
             <!-- <log level="warn" message="Doing product search with queryString [${termSb.toString()}], indexName:${indexName}, documentType:${documentType}"/> -->
