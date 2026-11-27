@@ -50,7 +50,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="getCalendarEvents">
         <service-call name="mantle.work.EventServices.get#FullCalendarData" web-send-json-response="eventList"
-                in-map="Object.assign({}, context, {urlGString:(sri.buildUrl('eventDetail').url + '?workEffortId=${workEffort.workEffortId}')})"/>
+                in-map="Object.assign({}, context, {maxRangeDays:400, urlGString:(sri.buildUrl('eventDetail').url + '?workEffortId=${workEffort.workEffortId}')})"/>
         <default-response type="none"/>
     </transition>
     <transition name="getCalendarTasks">
