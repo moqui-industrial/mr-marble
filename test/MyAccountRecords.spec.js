@@ -1,4 +1,4 @@
-// My Account (screen/MyAccount/) acts only on the user's own records (plans/Security-Review.md SEC-RTE-81): a post that
+// My Account (screen/MyAccount/) acts only on the user's own records (plans/archive/Security-Review.md SEC-RTE-81): a post that
 // names another party's contact information, message, time entry, request content or expense invoice changes nothing
 // of it, and another party's message does not render. MyAccount.xml set the user's partyId only in pre-actions, which a
 // transition does not run, and several screens checked ownership nowhere or only in their render actions. As a user in

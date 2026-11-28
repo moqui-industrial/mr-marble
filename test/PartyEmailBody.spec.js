@@ -1,8 +1,8 @@
 // Party › Emails' EmailMessage (screen/SimpleScreens/Party/PartyEmails.xml): a message's body only for a message of the
 // party's, as its list finds them, never by the id alone, and sandboxed, since it is mail from outside and not cleaned
-// (plans/Security-Review.md SEC-MAIL-63).
+// (plans/archive/Security-Review.md SEC-MAIL-63).
 // Send again (sendEmailMessage of Party › Emails and Order › Detail; Shipment and Invoice have the same check): only a message
-// of the party or the order shown, never any message by its id (plans/Security-Review-Medium.md SEC-MAIL-64).
+// of the party or the order shown, never any message by its id (plans/archive/Security-Review-Medium.md SEC-MAIL-64).
 // The EmailMessage view of Order › Detail (Shipment and Invoice have the same check) likewise.
 // Run: ./moq test mr-marble --spec PartyEmailBody
 const webroot = "component://webroot/screen/webroot.xml"

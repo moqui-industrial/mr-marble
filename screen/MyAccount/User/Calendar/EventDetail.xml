@@ -19,7 +19,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- the user's party is a party to the event or its organizer (the owner, as New Event makes it and Mantle's
         check#EventAccess reads it), for the page and for each transition (a transition's own actions run past a returned error,
-        so it throws); each transition takes only its form's fields, for this work effort (plans/Security-Review.md SEC-RTE-81) -->
+        so it throws); each transition takes only its form's fields, for this work effort (plans/archive/Security-Review.md SEC-RTE-81) -->
     <always-actions>
         <entity-find entity-name="mantle.work.effort.WorkEffortParty" list="checkWepList">
             <date-filter/><econdition field-name="workEffortId"/><econdition field-name="partyId" from="ec.user.userAccount?.partyId || '_NA_'"/></entity-find>

@@ -1,5 +1,5 @@
 // Whether Marble's screens show or change a record, by Mantle's rule for it inside the user's organizations (Mantle
-// search/SearchScope.js hitHidden, the universal search's per-hit rule; plans/Security-Review.md SEC-DAT-98): a confidential
+// search/SearchScope.js hitHidden, the universal search's per-hit rule; plans/archive/Security-Review.md SEC-DAT-98): a confidential
 // HR case, a maintenance request or work order outside the user's Maintenance reach, a protected People task, a confidential
 // Smithy issue's task and a person who is only an applicant are kept from the user. Each answer is kept for the request
 // (ec.context), as a transition and its screen ask it of the same record. CC0 plus patent grant.

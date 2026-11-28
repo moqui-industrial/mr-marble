@@ -1,6 +1,6 @@
 // The report screens' Email Export (webroot BasicTransitions.xml emailScreenAsync, included by the Accounting reports):
 // the transition passes the service the form's own fields, so a request does not choose the template, Cc or Bcc, and a
-// fileName from the request is the attachment's name as written, never expanded as script (plans/Security-Review.md
+// fileName from the request is the attachment's name as written, never expanded as script (plans/archive/Security-Review.md
 // SEC-MAIL-61). The mail goes through the mail capture, from a server of the spec's own.
 // Run: ./moq test mr-marble --spec EmailScreenAsync
 const webroot = "component://webroot/screen/webroot.xml"

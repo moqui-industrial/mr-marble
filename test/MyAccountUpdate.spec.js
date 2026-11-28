@@ -1,5 +1,5 @@
 // My Account's account form (screen/MyAccount/User/Account.xml, updateUser): the transition passes update#Account the
-// user's own account and only the form's fields (plans/Security-Review.md SEC-RTE-81). A post that names another account,
+// user's own account and only the form's fields (plans/archive/Security-Review.md SEC-RTE-81). A post that names another account,
 // as a plain userId or as a multi post's userId_0, and a posted username change nothing but the caller's own fields.
 // Run: ./moq test mr-marble --spec MyAccountUpdate
 const webroot = "component://webroot/screen/webroot.xml"

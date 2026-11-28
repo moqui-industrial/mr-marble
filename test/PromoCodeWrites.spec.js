@@ -1,6 +1,6 @@
 // Marble's promotion code screens (screen/SimpleScreens/ProductStore/Promotion/PromoCode) write a code through Mantle's
 // store#PromoCode, which keeps a code's text unique within its store's organization (the entity's own index is no longer
-// unique; plans/Security-Review.md SEC-BAP-108 review), and end one through expire#PromoCode. Run: ./moq test mr-marble --spec PromoCodeWrites
+// unique; plans/archive/Security-Review.md SEC-BAP-108 review), and end one through expire#PromoCode. Run: ./moq test mr-marble --spec PromoCodeWrites
 const root = "component://mr-marble/screen/SimpleScreens.xml"
 const path = "ProductStore/Promotion/PromoCode/FindPromoCode/createPromoCode"
 function sys(run) {

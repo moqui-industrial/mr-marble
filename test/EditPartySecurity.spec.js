@@ -1,7 +1,7 @@
 // Marble's Edit Party screen (screen/SimpleScreens/Party/EditParty.xml, its sections included by EditCustomer and
 // EditSupplier): a party's identifications are read and written through Accounting's services, never a tax identification,
 // every value masked, changes only by a receivables or payables editor of an organization the party is a customer or
-// supplier of (template/party/PartyIdentifications.js; plans/Security-Review.md SEC-BAP-140).
+// supplier of (template/party/PartyIdentifications.js; plans/archive/Security-Review.md SEC-BAP-140).
 // The account's sign-in form and its enable and disable links show only to ADMIN_IDENTITY_MANAGE (SEC-ADM-89). One html
 // render of Edit Party, by a user who holds none of these; the transitions posted as each user.
 // Run: ./moq test mr-marble --spec EditPartySecurity

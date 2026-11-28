@@ -1,6 +1,6 @@
 // Marble's party and product lookups (template/party/PartyForms.xml searchPartyList, template/product/ProductTransitions.xml
 // getProductList) search the app's own party and product documents, never a document type a request names
-// (plans/Security-Review-Medium.md SEC-DAT-81: a request's documentType searched any store, each answer a yes or no):
+// (plans/archive/Security-Review-Medium.md SEC-DAT-81: a request's documentType searched any store, each answer a yes or no):
 // a party lookup asked for products answers parties, a product lookup asked for parties answers products. As john.doe,
 // after the data feed has indexed the demo data. Run: ./moq test mr-marble --spec LookupDocumentType
 const webroot = "component://webroot/screen/webroot.xml"
